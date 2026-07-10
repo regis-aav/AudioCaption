@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AudioCaption - Where audio meets subtitles.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="ac-page">
+      <header class="ac-hero">
+        <p class="ac-kicker">AudioCaption</p>
+        <h1 class="ac-title">Where audio meets subtitles.</h1>
+        <p class="ac-intro">
+          Un lecteur audio sobre pour publier un podcast, une image et une transcription synchronisée sans encoder de vidéo.
+        </p>
+      </header>
+
+      <section class="ac-player" aria-label="Lecteur AudioCaption">
+        <div class="ac-media">
+          <img class="ac-cover" id="ac-cover" alt="Image du programme audio">
+          <div class="ac-caption" id="ac-caption" aria-live="polite">Chargez un fichier audio et une transcription synchronisée.</div>
+        </div>
+
+        <div class="ac-panel">
+          <div class="ac-panel-header">
+            <p class="ac-section-label">Prototype player</p>
+            <h2 class="ac-panel-title">Podcast augmenté par sous-titres</h2>
+            <p class="ac-panel-text">
+              Chargez vos médias, puis naviguez dans la transcription synchronisée.
+            </p>
+          </div>
+
+          <audio id="ac-audio" preload="metadata"></audio>
+
+          <div class="ac-controls" aria-label="Emplacement du futur lecteur AudioCaption">
+            <button class="ac-play" id="ac-play" type="button" aria-label="Lire">
+              <span class="ac-play-icon" aria-hidden="true">▶</span>
+            </button>
+
+            <div class="ac-timeline">
+              <div class="ac-time-row">
+                <span class="ac-time" id="ac-current-time">00:00</span>
+                <span class="ac-time" id="ac-duration">00:00</span>
+              </div>
+              <input class="ac-progress" id="ac-progress" type="range" min="0" max="100" value="0" step="0.01" aria-label="Progression audio">
+            </div>
+
+            <label class="ac-volume">
+              <span class="ac-volume-label">Volume</span>
+              <input class="ac-volume-slider" id="ac-volume" type="range" min="0" max="1" value="1" step="0.01">
+            </label>
+          </div>
+
+          <p class="ac-future-note">Espace préparé pour le futur lecteur audio personnalisé.</p>
+
+          <div class="ac-loaders" aria-label="Chargement des médias">
+            <label class="ac-file">
+              <span>Image</span>
+              <input id="ac-image-input" type="file" accept="image/*">
+            </label>
+            <label class="ac-file">
+              <span>Audio MP3</span>
+              <input id="ac-audio-input" type="file" accept="audio/*,.mp3">
+            </label>
+            <label class="ac-file">
+              <span>SRT / VTT</span>
+              <input id="ac-subtitle-input" type="file" accept=".srt,.vtt,text/plain">
+            </label>
+          </div>
+
+          <div class="ac-transcript" id="ac-transcript" aria-label="Transcription synchronisée"></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="ac-badge" aria-label="Badge AudioCaption">
+      <span aria-hidden="true">🌱</span>
+      <span>Digital Sobriety<br>Powered by AudioCaption</span>
+    </aside>
+
+    <script src="app.js"></script>
+  </body>
+</html>
