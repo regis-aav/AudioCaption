@@ -36,6 +36,7 @@ body {
 .ac-hero {
   max-width: 760px;
   margin-bottom: 34px;
+  animation: ac-enter 420ms ease-out both;
 }
 
 .ac-player {
@@ -52,6 +53,19 @@ body {
   border-radius: var(--ac-radius-lg);
   background: rgba(255, 255, 255, 0.86);
   box-shadow: var(--ac-shadow);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+  animation: ac-enter 520ms ease-out both;
+}
+
+.ac-panel {
+  animation-delay: 80ms;
+}
+
+.ac-player.is-dragging .ac-media,
+.ac-player.is-dragging .ac-panel {
+  border-color: var(--ac-gold);
+  box-shadow: 0 0 0 4px rgba(216, 168, 47, 0.18), var(--ac-shadow);
+  animation: ac-drag-feedback 900ms ease-in-out infinite alternate;
 }
 
 .ac-media {
@@ -180,6 +194,18 @@ body {
   box-shadow: 0 16px 30px rgba(184, 135, 21, 0.34);
 }
 
+.ac-play:disabled,
+.ac-progress:disabled,
+.ac-volume-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ac-play:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
 .ac-play-icon {
   transform: translateX(1px);
   font-size: 1.15rem;
@@ -236,13 +262,15 @@ body {
   background: #ffffff;
   font-size: 0.82rem;
   font-weight: 700;
-  transition: border-color 180ms ease, background 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .ac-file:hover,
 .ac-file:focus-within {
   border-color: var(--ac-gold);
   background: #fffdf8;
+  box-shadow: 0 10px 20px rgba(21, 19, 15, 0.08);
+  transform: translateY(-1px);
 }
 
 .ac-file input {
@@ -305,6 +333,35 @@ body {
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.5;
+}
+
+@keyframes ac-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ac-drag-feedback {
+  to {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (max-width: 880px) {

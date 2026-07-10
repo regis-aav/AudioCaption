@@ -37,7 +37,7 @@
           <audio id="ac-audio" preload="metadata"></audio>
 
           <div class="ac-controls" aria-label="Emplacement du futur lecteur AudioCaption">
-            <button class="ac-play" id="ac-play" type="button" aria-label="Lire">
+            <button class="ac-play" id="ac-play" type="button" aria-label="Lire" disabled>
               <span class="ac-play-icon" aria-hidden="true">▶</span>
             </button>
 
@@ -46,16 +46,16 @@
                 <span class="ac-time" id="ac-current-time">00:00</span>
                 <span class="ac-time" id="ac-duration">00:00</span>
               </div>
-              <input class="ac-progress" id="ac-progress" type="range" min="0" max="100" value="0" step="0.01" aria-label="Progression audio">
+              <input class="ac-progress" id="ac-progress" type="range" min="0" max="100" value="0" step="0.01" aria-label="Progression audio" disabled>
             </div>
 
             <label class="ac-volume">
               <span class="ac-volume-label">Volume</span>
-              <input class="ac-volume-slider" id="ac-volume" type="range" min="0" max="1" value="1" step="0.01">
+              <input class="ac-volume-slider" id="ac-volume" type="range" min="0" max="1" value="1" step="0.01" disabled>
             </label>
           </div>
 
-          <p class="ac-future-note">Espace préparé pour le futur lecteur audio personnalisé.</p>
+          <p class="ac-future-note" id="ac-player-status" role="status">Chargez un fichier audio pour commencer.</p>
 
           <div class="ac-loaders" aria-label="Chargement des médias">
             <label class="ac-file">
