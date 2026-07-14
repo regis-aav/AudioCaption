@@ -9,6 +9,8 @@ const currentTime = document.querySelector("#ac-current-time");
 const duration = document.querySelector("#ac-duration");
 const volume = document.querySelector("#ac-volume");
 const playerStatus = document.querySelector("#ac-player-status");
+const episodeTitle = document.querySelector("#ac-episode-title");
+const episodeDuration = document.querySelector("#ac-episode-duration");
 const imageInput = document.querySelector("#ac-image-input");
 const audioInput = document.querySelector("#ac-audio-input");
 const subtitleInput = document.querySelector("#ac-subtitle-input");
@@ -164,6 +166,10 @@ function getFileExtension(file) {
   return file.name.split(".").pop().toLowerCase();
 }
 
+function getEpisodeTitle(file) {
+  return file.name.replace(/\.[^/.]+$/, "") || "Titre de l’épisode";
+}
+
 function isImageFile(file) {
   return ["jpg", "jpeg", "png", "webp"].includes(getFileExtension(file)) || [
     "image/jpeg",
@@ -187,6 +193,8 @@ function loadImageFile(file) {
 function loadAudioFile(file) {
   setControlsEnabled(false);
   isSeeking = false;
+  episodeTitle.textContent = getEpisodeTitle(file);
+  episodeDuration.textContent = "--:--";
   setPlayerStatus("Chargement de l'audio…");
   audio.src = URL.createObjectURL(file);
   audio.load();
@@ -313,6 +321,7 @@ volume.addEventListener("input", () => {
 
 audio.addEventListener("loadedmetadata", () => {
   updateProgress();
+  episodeDuration.textContent = formatTime(audio.duration);
   setControlsEnabled(true);
   setPlayerStatus("Audio chargé. Vous pouvez commencer la lecture.");
 });

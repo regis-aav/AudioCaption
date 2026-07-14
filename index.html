@@ -20,9 +20,35 @@
       </header>
 
       <section class="ac-player" aria-label="Lecteur AudioCaption">
-        <div class="ac-media">
-          <img class="ac-cover" id="ac-cover" alt="Image du programme audio">
-        </div>
+        <article class="ac-episode-card" aria-labelledby="ac-episode-title">
+          <div class="ac-media">
+            <img class="ac-cover" id="ac-cover" alt="Image du programme audio">
+            <div class="ac-cover-placeholder">
+              <svg class="ac-cover-icon" viewBox="0 0 48 48" aria-hidden="true">
+                <rect x="6" y="8" width="36" height="32" rx="5"></rect>
+                <circle cx="17" cy="19" r="3"></circle>
+                <path d="m10 35 10-10 7 7 5-5 6 8"></path>
+              </svg>
+              <p class="ac-cover-placeholder-title">Déposez votre visuel</p>
+              <p class="ac-cover-placeholder-details">Format recommandé : 16:9<br>1920 × 1080 px</p>
+            </div>
+          </div>
+          <div class="ac-episode-details">
+            <p class="ac-episode-label">Épisode</p>
+            <h2 class="ac-episode-title" id="ac-episode-title" data-episode-field="title">Titre de l’épisode</h2>
+            <p class="ac-episode-description" data-episode-field="description">Une courte présentation de cet épisode sera bientôt disponible.</p>
+            <dl class="ac-episode-meta">
+              <div>
+                <dt>Durée</dt>
+                <dd id="ac-episode-duration" data-episode-field="duration">--:--</dd>
+              </div>
+              <div>
+                <dt>Auteur</dt>
+                <dd data-episode-field="author">À venir</dd>
+              </div>
+            </dl>
+          </div>
+        </article>
 
         <div class="ac-panel">
           <div class="ac-panel-header">
