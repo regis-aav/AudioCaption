@@ -1,7 +1,6 @@
 const audio = document.querySelector("#ac-audio");
 const player = document.querySelector(".ac-player");
 const cover = document.querySelector("#ac-cover");
-const caption = document.querySelector("#ac-caption");
 const transcript = document.querySelector("#ac-transcript");
 const playButton = document.querySelector("#ac-play");
 const playIcon = document.querySelector(".ac-play-icon");
@@ -117,14 +116,11 @@ function setActiveCue(index) {
   activeCueIndex = index;
 
   if (index === -1) {
-    caption.textContent = "";
     return;
   }
 
   const activeButton = cueButtons[index];
-  const activeCue = cues[index];
 
-  caption.textContent = activeCue.text;
   activeButton.classList.add("is-active");
   activeButton.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -199,7 +195,6 @@ function loadAudioFile(file) {
 async function loadSubtitleFile(file) {
   cues = parseSubtitles(await file.text());
   activeCueIndex = -1;
-  caption.textContent = cues.length ? "Transcription chargée." : "Aucun sous-titre détecté.";
   renderTranscript();
   syncTranscript();
 }
