@@ -45,7 +45,7 @@ body {
   align-items: stretch;
 }
 
-.ac-media,
+.ac-episode-card,
 .ac-panel {
   overflow: hidden;
   border: 1px solid var(--ac-line);
@@ -60,27 +60,191 @@ body {
   animation-delay: 80ms;
 }
 
-.ac-player.is-dragging .ac-media,
+.ac-player.is-dragging .ac-episode-card,
 .ac-player.is-dragging .ac-panel {
   border-color: var(--ac-gold);
   box-shadow: 0 0 0 4px rgba(216, 168, 47, 0.18), var(--ac-shadow);
   animation: ac-drag-feedback 900ms ease-in-out infinite alternate;
 }
 
+.ac-episode-card {
+  align-self: start;
+}
+
 .ac-media {
   position: relative;
-  min-height: 620px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--ac-surface-strong);
 }
 
 .ac-cover {
   width: 100%;
   height: 100%;
-  min-height: 620px;
   display: block;
   object-fit: cover;
-  background:
-    linear-gradient(rgba(21, 19, 15, 0.18), rgba(21, 19, 15, 0.46)),
-    linear-gradient(145deg, #2b2925, #8a6a23);
+  object-position: center;
+  background: var(--ac-surface-strong);
+}
+
+.ac-cover:not([src]) {
+  visibility: hidden;
+}
+
+.ac-cover-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--ac-muted);
+  text-align: center;
+}
+
+.ac-cover[src] + .ac-cover-placeholder {
+  display: none;
+}
+
+.ac-cover-icon {
+  width: 48px;
+  height: 48px;
+  justify-self: center;
+  margin-bottom: 6px;
+  fill: none;
+  stroke: var(--ac-gold-strong);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.ac-cover-placeholder-title,
+.ac-cover-placeholder-details {
+  margin: 0;
+}
+
+.ac-cover-placeholder-title {
+  color: var(--ac-ink);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 700;
+}
+
+.ac-cover-placeholder-details {
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ac-episode-details {
+  padding: 24px clamp(22px, 3vw, 30px) 26px;
+  border-top: 1px solid var(--ac-line);
+  background: linear-gradient(180deg, #ffffff, var(--ac-surface));
+}
+
+.ac-episode-label {
+  margin: 0 0 8px;
+  color: var(--ac-gold-strong);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ac-episode-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  line-height: 1.15;
+}
+
+.ac-episode-description {
+  display: -webkit-box;
+  margin: 12px 0 0;
+  overflow: hidden;
+  color: var(--ac-muted);
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ac-episode-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 20px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--ac-line);
+}
+
+.ac-episode-meta dt {
+  color: var(--ac-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ac-episode-meta dd {
+  margin: 4px 0 0;
+  color: var(--ac-ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.ac-sobriety {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #ead9a5;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fffdf8, var(--ac-gold-soft));
+}
+
+.ac-sobriety h3,
+.ac-sobriety p {
+  margin: 0;
+}
+
+.ac-sobriety h3 {
+  font-size: 1rem;
+}
+
+.ac-sobriety > p:not(.ac-sobriety-note) {
+  margin-top: 8px;
+  color: var(--ac-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.ac-sobriety-comparison {
+  margin: 18px 0 0;
+}
+
+.ac-sobriety-comparison div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-top: 1px solid rgba(185, 135, 21, 0.2);
+}
+
+.ac-sobriety-comparison dt {
+  color: var(--ac-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.ac-sobriety-comparison dd {
+  margin: 0;
+  color: var(--ac-ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ac-sobriety-note {
+  margin-top: 4px !important;
+  color: var(--ac-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 .ac-panel {
@@ -324,6 +488,17 @@ body {
   line-height: 1.5;
 }
 
+.ac-badge-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ac-badge-link:hover,
+.ac-badge-link:focus-visible {
+  color: var(--ac-gold-strong);
+  text-decoration: underline;
+}
+
 @keyframes ac-enter {
   from {
     opacity: 0;
@@ -363,11 +538,6 @@ body {
   .ac-controls,
   .ac-loaders {
     grid-template-columns: 1fr;
-  }
-
-  .ac-media,
-  .ac-cover {
-    min-height: 420px;
   }
 
   .ac-badge {

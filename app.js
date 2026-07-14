@@ -11,6 +11,9 @@ const volume = document.querySelector("#ac-volume");
 const playerStatus = document.querySelector("#ac-player-status");
 const episodeTitle = document.querySelector("#ac-episode-title");
 const episodeDuration = document.querySelector("#ac-episode-duration");
+const sobrietyActualSize = document.querySelector("#ac-sobriety-actual-size");
+const sobrietyVideoSize = document.querySelector("#ac-sobriety-video-size");
+const sobrietySavings = document.querySelector("#ac-sobriety-savings");
 const imageInput = document.querySelector("#ac-image-input");
 const audioInput = document.querySelector("#ac-audio-input");
 const subtitleInput = document.querySelector("#ac-subtitle-input");
@@ -20,6 +23,15 @@ let activeCueIndex = -1;
 let isSeeking = false;
 let dragDepth = 0;
 let ignoredFileNames = [];
+let loadedAudioDuration = Number.NaN;
+
+const loadedFileSizes = {
+  image: null,
+  audio: null,
+  subtitles: null,
+};
+
+const fullHdVideoBitrate = 5_000_000;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) {
@@ -170,6 +182,44 @@ function getEpisodeTitle(file) {
   return file.name.replace(/\.[^/.]+$/, "") || "Titre de l’épisode";
 }
 
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return "—";
+  }
+
+  const units = ["o", "kB", "MB", "GB"];
+  const unitIndex = Math.min(Math.floor(Math.log(bytes || 1) / Math.log(1024)), units.length - 1);
+  const value = bytes / 1024 ** unitIndex;
+
+  return `${value.toFixed(unitIndex ? 1 : 0)} ${units[unitIndex]}`;
+}
+
+function updateSobrietyIndicator() {
+  const fileSizes = Object.values(loadedFileSizes).filter(Number.isFinite);
+
+  if (!fileSizes.length) {
+    sobrietyActualSize.textContent = "—";
+    sobrietyVideoSize.textContent = "—";
+    sobrietySavings.textContent = "—";
+    return;
+  }
+
+  const actualSize = fileSizes.reduce((total, size) => total + size, 0);
+  sobrietyActualSize.textContent = formatFileSize(actualSize);
+
+  if (!Number.isFinite(loadedAudioDuration) || loadedAudioDuration <= 0) {
+    sobrietyVideoSize.textContent = "—";
+    sobrietySavings.textContent = "—";
+    return;
+  }
+
+  const estimatedVideoSize = (loadedAudioDuration * fullHdVideoBitrate) / 8;
+  const savings = Math.max(0, Math.min(100, Math.round((1 - actualSize / estimatedVideoSize) * 100)));
+
+  sobrietyVideoSize.textContent = formatFileSize(estimatedVideoSize);
+  sobrietySavings.textContent = `${savings} %`;
+}
+
 function isImageFile(file) {
   return ["jpg", "jpeg", "png", "webp"].includes(getFileExtension(file)) || [
     "image/jpeg",
@@ -187,6 +237,8 @@ function isSubtitleFile(file) {
 }
 
 function loadImageFile(file) {
+  loadedFileSizes.image = file.size;
+  updateSobrietyIndicator();
   cover.src = URL.createObjectURL(file);
 }
 
@@ -195,12 +247,17 @@ function loadAudioFile(file) {
   isSeeking = false;
   episodeTitle.textContent = getEpisodeTitle(file);
   episodeDuration.textContent = "--:--";
+  loadedFileSizes.audio = file.size;
+  loadedAudioDuration = Number.NaN;
+  updateSobrietyIndicator();
   setPlayerStatus("Chargement de l'audio…");
   audio.src = URL.createObjectURL(file);
   audio.load();
 }
 
 async function loadSubtitleFile(file) {
+  loadedFileSizes.subtitles = file.size;
+  updateSobrietyIndicator();
   cues = parseSubtitles(await file.text());
   activeCueIndex = -1;
   renderTranscript();
@@ -322,6 +379,8 @@ volume.addEventListener("input", () => {
 audio.addEventListener("loadedmetadata", () => {
   updateProgress();
   episodeDuration.textContent = formatTime(audio.duration);
+  loadedAudioDuration = audio.duration;
+  updateSobrietyIndicator();
   setControlsEnabled(true);
   setPlayerStatus("Audio chargé. Vous pouvez commencer la lecture.");
 });
