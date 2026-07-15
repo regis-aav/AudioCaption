@@ -2,6 +2,8 @@ const audio = document.querySelector("#ac-audio");
 const player = document.querySelector(".ac-player");
 const cover = document.querySelector("#ac-cover");
 const transcript = document.querySelector("#ac-transcript");
+const transcriptSearch = document.querySelector("#ac-transcript-search");
+const searchResults = document.querySelector("#ac-search-results");
 const playButton = document.querySelector("#ac-play");
 const playIcon = document.querySelector(".ac-play-icon");
 const progress = document.querySelector("#ac-progress");
@@ -24,6 +26,7 @@ let isSeeking = false;
 let dragDepth = 0;
 let ignoredFileNames = [];
 let loadedAudioDuration = Number.NaN;
+let transcriptSearchQuery = "";
 
 const loadedFileSizes = {
   image: null,
@@ -100,18 +103,67 @@ function parseSubtitles(content) {
     .filter(Boolean);
 }
 
+function cueMatchesSearch(cue) {
+  return !transcriptSearchQuery || cue.text.toLocaleLowerCase().includes(transcriptSearchQuery);
+}
+
+function renderCueText(button, text) {
+  if (!transcriptSearchQuery) {
+    button.textContent = text;
+    return;
+  }
+
+  const normalizedText = text.toLocaleLowerCase();
+  let textIndex = 0;
+  let matchIndex = normalizedText.indexOf(transcriptSearchQuery, textIndex);
+
+  while (matchIndex !== -1) {
+    button.append(document.createTextNode(text.slice(textIndex, matchIndex)));
+
+    const mark = document.createElement("mark");
+    mark.textContent = text.slice(matchIndex, matchIndex + transcriptSearchQuery.length);
+    button.append(mark);
+
+    textIndex = matchIndex + transcriptSearchQuery.length;
+    matchIndex = normalizedText.indexOf(transcriptSearchQuery, textIndex);
+  }
+
+  button.append(document.createTextNode(text.slice(textIndex)));
+}
+
+function updateSearchResults() {
+  if (!cues.length) {
+    searchResults.textContent = "Aucune transcription chargée.";
+    return;
+  }
+
+  if (!transcriptSearchQuery) {
+    searchResults.textContent = `${cues.length} passages dans la transcription.`;
+    return;
+  }
+
+  const resultCount = cues.filter(cueMatchesSearch).length;
+  searchResults.textContent = `${resultCount} ${resultCount > 1 ? "résultats" : "résultat"} trouvé${resultCount > 1 ? "s" : ""}.`;
+}
+
 function renderTranscript() {
-  transcript.innerHTML = "";
+  transcript.replaceChildren();
 
   cues.forEach((cue, index) => {
     const button = document.createElement("button");
     button.className = "ac-cue";
     button.type = "button";
-    button.textContent = cue.text;
+    button.classList.toggle("is-search-muted", Boolean(transcriptSearchQuery) && !cueMatchesSearch(cue));
+    renderCueText(button, cue.text);
     button.addEventListener("click", () => {
       audio.currentTime = cue.start;
       audio.play();
     });
+
+    if (index === activeCueIndex) {
+      button.classList.add("is-active");
+    }
+
     transcript.appendChild(button);
   });
 }
@@ -261,6 +313,7 @@ async function loadSubtitleFile(file) {
   cues = parseSubtitles(await file.text());
   activeCueIndex = -1;
   renderTranscript();
+  updateSearchResults();
   syncTranscript();
 }
 
@@ -322,6 +375,12 @@ subtitleInput.addEventListener("change", async () => {
 
   ignoredFileNames = [];
   await loadSubtitleFile(file);
+});
+
+transcriptSearch.addEventListener("input", () => {
+  transcriptSearchQuery = transcriptSearch.value.trim().toLocaleLowerCase();
+  renderTranscript();
+  updateSearchResults();
 });
 
 player.addEventListener("dragenter", (event) => {

@@ -421,6 +421,42 @@ body {
   font-size: 0.78rem;
 }
 
+.ac-transcript-search {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ac-search-label {
+  display: grid;
+  gap: 6px;
+  color: var(--ac-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ac-search-label input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  color: var(--ac-ink);
+  background: #ffffff;
+  font: inherit;
+}
+
+.ac-search-label input:focus-visible {
+  outline: 3px solid rgba(216, 168, 47, 0.32);
+  outline-offset: 2px;
+}
+
+.ac-search-results {
+  margin: 0;
+  color: var(--ac-muted);
+  font-size: 0.78rem;
+}
+
 .ac-transcript {
   max-height: 360px;
   overflow: auto;
@@ -463,6 +499,18 @@ body {
   border-left-color: var(--ac-gold);
   background: var(--ac-gold-soft);
   font-weight: 600;
+  opacity: 1;
+}
+
+.ac-cue.is-search-muted {
+  opacity: 0.4;
+}
+
+.ac-cue mark {
+  padding: 0 0.08em;
+  border-radius: 3px;
+  color: inherit;
+  background: #f6d77a;
 }
 
 .ac-badge {
