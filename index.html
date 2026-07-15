@@ -102,25 +102,82 @@
           <p class="ac-future-note" id="ac-player-status" role="status">Chargez un fichier audio pour commencer.</p>
 
           <div class="ac-loaders" aria-label="Chargement des médias">
-            <label class="ac-file">
-              <span>Image</span>
+            <label class="ac-file" data-import-card="image">
+              <span class="ac-file-default">
+                <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
+                  <rect x="4" y="6" width="24" height="20" rx="3"></rect>
+                  <circle cx="12" cy="13" r="2"></circle>
+                  <path d="m7 23 7-7 5 5 3-3 3 3"></path>
+                </svg>
+                <span class="ac-file-title">Visuel</span>
+                <span class="ac-file-help">Déposez une image<br>ou cliquez pour sélectionner</span>
+                <span class="ac-file-formats">JPG • PNG • WEBP</span>
+              </span>
+              <span class="ac-file-success" role="status" aria-live="polite" hidden>
+                <span class="ac-file-check" aria-hidden="true">✓</span>
+                <span class="ac-file-success-title">Visuel chargé</span>
+                <span class="ac-file-name" data-import-file-name></span>
+                <span class="ac-file-size" data-import-file-size></span>
+              </span>
               <input id="ac-image-input" type="file" accept="image/*">
             </label>
-            <label class="ac-file">
-              <span>Audio MP3</span>
+            <label class="ac-file" data-import-card="audio">
+              <span class="ac-file-default">
+                <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
+                  <path d="M12 23V9l13-3v14"></path>
+                  <circle cx="8.5" cy="23" r="3.5"></circle>
+                  <circle cx="21.5" cy="20" r="3.5"></circle>
+                </svg>
+                <span class="ac-file-title">Audio</span>
+                <span class="ac-file-help">Déposez un fichier audio<br>ou cliquez pour sélectionner</span>
+                <span class="ac-file-formats">MP3 • WAV • M4A • OGG</span>
+              </span>
+              <span class="ac-file-success" role="status" aria-live="polite" hidden>
+                <span class="ac-file-check" aria-hidden="true">✓</span>
+                <span class="ac-file-success-title">Audio chargé</span>
+                <span class="ac-file-name" data-import-file-name></span>
+                <span class="ac-file-size" data-import-file-size></span>
+              </span>
               <input id="ac-audio-input" type="file" accept="audio/*,.mp3">
             </label>
-            <label class="ac-file">
-              <span>SRT / VTT</span>
+            <label class="ac-file" data-import-card="subtitles">
+              <span class="ac-file-default">
+                <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
+                  <rect x="4" y="6" width="24" height="20" rx="3"></rect>
+                  <path d="M9 13h6M18 13h5M9 19h4M16 19h7"></path>
+                </svg>
+                <span class="ac-file-title">Sous-titres</span>
+                <span class="ac-file-help">Déposez une transcription<br>ou cliquez pour sélectionner</span>
+                <span class="ac-file-formats">SRT • VTT</span>
+              </span>
+              <span class="ac-file-success" role="status" aria-live="polite" hidden>
+                <span class="ac-file-check" aria-hidden="true">✓</span>
+                <span class="ac-file-success-title">Sous-titres chargés</span>
+                <span class="ac-file-name" data-import-file-name></span>
+                <span class="ac-file-size" data-import-file-size></span>
+              </span>
               <input id="ac-subtitle-input" type="file" accept=".srt,.vtt,text/plain">
             </label>
           </div>
 
+          <div class="ac-imports-ready" id="ac-imports-ready" role="status" hidden>
+            <span class="ac-imports-ready-label"><span aria-hidden="true">✓</span> Épisode prêt</span>
+            <span aria-hidden="true">·</span>
+            <button class="ac-imports-edit" id="ac-imports-edit" type="button">Modifier les médias…</button>
+          </div>
+
           <div class="ac-transcript-search">
-            <label class="ac-search-label" for="ac-transcript-search">
-              <span>Rechercher dans la transcription</span>
-              <input id="ac-transcript-search" type="search" placeholder="Mot ou expression" aria-controls="ac-transcript" aria-describedby="ac-search-results">
-            </label>
+            <div class="ac-search-row">
+              <label class="ac-search-label" for="ac-transcript-search">
+                <span>Rechercher dans la transcription</span>
+                <input id="ac-transcript-search" type="search" placeholder="Mot ou expression" aria-controls="ac-transcript" aria-describedby="ac-search-results">
+              </label>
+              <div class="ac-search-navigation" role="group" aria-label="Navigation dans les résultats">
+                <span class="ac-search-counter" id="ac-search-counter" aria-hidden="true">0 / 0</span>
+                <button class="ac-search-button" id="ac-search-previous" type="button" aria-label="Résultat précédent" disabled>Précédent</button>
+                <button class="ac-search-button" id="ac-search-next" type="button" aria-label="Résultat suivant" disabled>Suivant</button>
+              </div>
+            </div>
             <p class="ac-search-results" id="ac-search-results" role="status" aria-live="polite">Aucune transcription chargée.</p>
           </div>
 

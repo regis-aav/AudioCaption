@@ -4,6 +4,9 @@ const cover = document.querySelector("#ac-cover");
 const transcript = document.querySelector("#ac-transcript");
 const transcriptSearch = document.querySelector("#ac-transcript-search");
 const searchResults = document.querySelector("#ac-search-results");
+const searchCounter = document.querySelector("#ac-search-counter");
+const searchPreviousButton = document.querySelector("#ac-search-previous");
+const searchNextButton = document.querySelector("#ac-search-next");
 const playButton = document.querySelector("#ac-play");
 const playIcon = document.querySelector(".ac-play-icon");
 const progress = document.querySelector("#ac-progress");
@@ -19,6 +22,12 @@ const sobrietySavings = document.querySelector("#ac-sobriety-savings");
 const imageInput = document.querySelector("#ac-image-input");
 const audioInput = document.querySelector("#ac-audio-input");
 const subtitleInput = document.querySelector("#ac-subtitle-input");
+const loaders = document.querySelector(".ac-loaders");
+const importsReady = document.querySelector("#ac-imports-ready");
+const importsEditButton = document.querySelector("#ac-imports-edit");
+const importCards = Object.fromEntries(
+  Array.from(document.querySelectorAll("[data-import-card]"), (card) => [card.dataset.importCard, card])
+);
 
 let cues = [];
 let activeCueIndex = -1;
@@ -27,6 +36,10 @@ let dragDepth = 0;
 let ignoredFileNames = [];
 let loadedAudioDuration = Number.NaN;
 let transcriptSearchQuery = "";
+let activeSearchResultIndex = -1;
+let pendingImageImportFile = null;
+let pendingAudioImportFile = null;
+let areImportCardsExpanded = true;
 
 const loadedFileSizes = {
   image: null,
@@ -107,6 +120,20 @@ function cueMatchesSearch(cue) {
   return !transcriptSearchQuery || cue.text.toLocaleLowerCase().includes(transcriptSearchQuery);
 }
 
+function getSearchResultIndexes() {
+  if (!transcriptSearchQuery) {
+    return [];
+  }
+
+  return cues.reduce((indexes, cue, index) => {
+    if (cueMatchesSearch(cue)) {
+      indexes.push(index);
+    }
+
+    return indexes;
+  }, []);
+}
+
 function renderCueText(button, text) {
   if (!transcriptSearchQuery) {
     button.textContent = text;
@@ -134,26 +161,40 @@ function renderCueText(button, text) {
 function updateSearchResults() {
   if (!cues.length) {
     searchResults.textContent = "Aucune transcription chargée.";
+    searchCounter.textContent = "0 / 0";
+    searchPreviousButton.disabled = true;
+    searchNextButton.disabled = true;
     return;
   }
 
   if (!transcriptSearchQuery) {
     searchResults.textContent = `${cues.length} passages dans la transcription.`;
+    searchCounter.textContent = "0 / 0";
+    searchPreviousButton.disabled = true;
+    searchNextButton.disabled = true;
     return;
   }
 
-  const resultCount = cues.filter(cueMatchesSearch).length;
-  searchResults.textContent = `${resultCount} ${resultCount > 1 ? "résultats" : "résultat"} trouvé${resultCount > 1 ? "s" : ""}.`;
+  const resultIndexes = getSearchResultIndexes();
+  const resultCount = resultIndexes.length;
+  const activeResultNumber = activeSearchResultIndex + 1;
+
+  searchCounter.textContent = `${Math.max(0, activeResultNumber)} / ${resultCount}`;
+  searchPreviousButton.disabled = resultCount === 0;
+  searchNextButton.disabled = resultCount === 0;
+  searchResults.textContent = `${Math.max(0, activeResultNumber)} / ${resultCount} résultat${resultCount > 1 ? "s" : ""} trouvé${resultCount > 1 ? "s" : ""}.`;
 }
 
 function renderTranscript() {
   transcript.replaceChildren();
+  const activeSearchCueIndex = getSearchResultIndexes()[activeSearchResultIndex];
 
   cues.forEach((cue, index) => {
     const button = document.createElement("button");
     button.className = "ac-cue";
     button.type = "button";
     button.classList.toggle("is-search-muted", Boolean(transcriptSearchQuery) && !cueMatchesSearch(cue));
+    button.classList.toggle("is-search-result-active", index === activeSearchCueIndex);
     renderCueText(button, cue.text);
     button.addEventListener("click", () => {
       audio.currentTime = cue.start;
@@ -246,6 +287,49 @@ function formatFileSize(bytes) {
   return `${value.toFixed(unitIndex ? 1 : 0)} ${units[unitIndex]}`;
 }
 
+function updateImportsVisibility({ collapseWhenReady = false } = {}) {
+  const isEpisodeReady = Object.values(importCards).every((card) => card.classList.contains("is-loaded"));
+
+  if (!isEpisodeReady) {
+    areImportCardsExpanded = true;
+  } else if (collapseWhenReady) {
+    areImportCardsExpanded = false;
+  }
+
+  loaders.hidden = isEpisodeReady && !areImportCardsExpanded;
+  importsReady.hidden = !isEpisodeReady || areImportCardsExpanded;
+}
+
+function resetImportCard(type) {
+  const card = importCards[type];
+
+  if (!card) {
+    return;
+  }
+
+  card.classList.remove("is-loaded");
+  card.querySelector(".ac-file-default").hidden = false;
+  card.querySelector(".ac-file-success").hidden = true;
+  card.querySelector("[data-import-file-name]").textContent = "";
+  card.querySelector("[data-import-file-size]").textContent = "";
+  updateImportsVisibility();
+}
+
+function updateImportCard(type, file) {
+  const card = importCards[type];
+
+  if (!card) {
+    return;
+  }
+
+  card.querySelector("[data-import-file-name]").textContent = file.name;
+  card.querySelector("[data-import-file-size]").textContent = formatFileSize(file.size);
+  card.querySelector(".ac-file-default").hidden = true;
+  card.querySelector(".ac-file-success").hidden = false;
+  card.classList.add("is-loaded");
+  updateImportsVisibility({ collapseWhenReady: true });
+}
+
 function updateSobrietyIndicator() {
   const fileSizes = Object.values(loadedFileSizes).filter(Number.isFinite);
 
@@ -289,12 +373,16 @@ function isSubtitleFile(file) {
 }
 
 function loadImageFile(file) {
+  pendingImageImportFile = file;
+  resetImportCard("image");
   loadedFileSizes.image = file.size;
   updateSobrietyIndicator();
   cover.src = URL.createObjectURL(file);
 }
 
 function loadAudioFile(file) {
+  pendingAudioImportFile = file;
+  resetImportCard("audio");
   setControlsEnabled(false);
   isSeeking = false;
   episodeTitle.textContent = getEpisodeTitle(file);
@@ -308,13 +396,19 @@ function loadAudioFile(file) {
 }
 
 async function loadSubtitleFile(file) {
+  resetImportCard("subtitles");
   loadedFileSizes.subtitles = file.size;
   updateSobrietyIndicator();
   cues = parseSubtitles(await file.text());
   activeCueIndex = -1;
+  activeSearchResultIndex = -1;
   renderTranscript();
   updateSearchResults();
   syncTranscript();
+
+  if (cues.length) {
+    updateImportCard("subtitles", file);
+  }
 }
 
 function handleDroppedFiles(fileList) {
@@ -377,10 +471,46 @@ subtitleInput.addEventListener("change", async () => {
   await loadSubtitleFile(file);
 });
 
+importsEditButton.addEventListener("click", () => {
+  areImportCardsExpanded = true;
+  updateImportsVisibility();
+  imageInput.focus();
+});
+
 transcriptSearch.addEventListener("input", () => {
   transcriptSearchQuery = transcriptSearch.value.trim().toLocaleLowerCase();
+  activeSearchResultIndex = -1;
   renderTranscript();
   updateSearchResults();
+});
+
+function navigateSearchResults(direction) {
+  const resultIndexes = getSearchResultIndexes();
+
+  if (!resultIndexes.length) {
+    return;
+  }
+
+  if (activeSearchResultIndex === -1) {
+    activeSearchResultIndex = direction > 0 ? 0 : resultIndexes.length - 1;
+  } else {
+    activeSearchResultIndex = (activeSearchResultIndex + direction + resultIndexes.length) % resultIndexes.length;
+  }
+
+  const cueIndex = resultIndexes[activeSearchResultIndex];
+  audio.currentTime = cues[cueIndex].start;
+  renderTranscript();
+  updateSearchResults();
+
+  transcript.querySelectorAll(".ac-cue")[cueIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+searchPreviousButton.addEventListener("click", () => {
+  navigateSearchResults(-1);
+});
+
+searchNextButton.addEventListener("click", () => {
+  navigateSearchResults(1);
 });
 
 player.addEventListener("dragenter", (event) => {
@@ -435,7 +565,22 @@ volume.addEventListener("input", () => {
   audio.volume = Number(volume.value);
 });
 
+cover.addEventListener("load", () => {
+  if (pendingImageImportFile) {
+    updateImportCard("image", pendingImageImportFile);
+    pendingImageImportFile = null;
+  }
+});
+cover.addEventListener("error", () => {
+  pendingImageImportFile = null;
+  resetImportCard("image");
+});
 audio.addEventListener("loadedmetadata", () => {
+  if (pendingAudioImportFile) {
+    updateImportCard("audio", pendingAudioImportFile);
+    pendingAudioImportFile = null;
+  }
+
   updateProgress();
   episodeDuration.textContent = formatTime(audio.duration);
   loadedAudioDuration = audio.duration;
@@ -444,6 +589,8 @@ audio.addEventListener("loadedmetadata", () => {
   setPlayerStatus("Audio chargé. Vous pouvez commencer la lecture.");
 });
 audio.addEventListener("error", () => {
+  pendingAudioImportFile = null;
+  resetImportCard("audio");
   setControlsEnabled(false);
   setPlayerStatus("Impossible de charger ce fichier audio.");
 });
@@ -457,3 +604,4 @@ audio.addEventListener("timeupdate", () => {
 
 updatePlayState();
 updateProgress();
+updateImportsVisibility();
