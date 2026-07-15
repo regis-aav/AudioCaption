@@ -541,6 +541,16 @@ body {
     order: -1;
   }
 
+  .ac-loaders {
+    gap: 14px;
+  }
+
+  .ac-file {
+    min-height: 96px;
+    align-content: center;
+    padding: 18px;
+  }
+
   .ac-badge {
     right: 12px;
     bottom: 12px;
