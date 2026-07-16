@@ -55,6 +55,14 @@ Episode
     audio
     captions
 
+  navigation
+    chapters
+      id
+      title
+      startTime
+      endTime
+      origin
+
   brand
     name
     logo
@@ -77,10 +85,11 @@ Episode
     format
 ```
 
-Cette organisation sépare quatre responsabilités :
+Cette organisation sépare cinq responsabilités :
 
 - `metadata` décrit le contenu ;
 - `media` référence les ressources nécessaires à sa lecture ;
+- `navigation` décrit sa structure temporelle, indépendamment du format audio d’origine ;
 - `brand` décrit l’identité éditoriale ;
 - `presentation` indique comment cette identité est appliquée au lecteur.
 
@@ -132,6 +141,30 @@ Les propriétés de `media` sont :
 | `captions` | Transcription synchronisée avec l’audio. | Optionnelle | Obligatoire. SRT ou WebVTT accepté à l’import, WebVTT recommandé pour l’export. Les cues doivent contenir des timestamps valides. |
 
 Les données binaires ne font pas nécessairement partie de l’objet sérialisé lui-même. Le modèle conserve une référence logique ; une couche de stockage du Studio ou le moteur d’export résout cette référence.
+
+### `navigation`
+
+`navigation` contient la structure éditoriale permettant de parcourir l’Episode. En V1, cette section est limitée à une seule propriété : `chapters`.
+
+| Propriété | Rôle | Type conceptuel | Présence | Valeur par défaut | Validation |
+|---|---|---|---|---|---|
+| `chapters` | Décrire les points d’entrée chronologiques de l’Episode. | Liste de chapitres | Optionnelle | Liste vide | Un seul niveau, ordre chronologique, identifiants uniques et temps de début valides. |
+
+Un chapitre normalisé contient :
+
+| Propriété | Rôle | Type conceptuel | Présence | Valeur par défaut | Validation |
+|---|---|---|---|---|---|
+| `id` | Identifier le chapitre dans l’Episode. | Chaîne | Obligatoire | Générée lors de la création ou de l’import | Non vide et unique dans `navigation.chapters`. Sa stabilité entre deux imports reste à arbitrer. |
+| `title` | Nommer le passage. | Texte | Obligatoire | Aucune | Texte non vide après normalisation des espaces. Aucun HTML exécutable. |
+| `startTime` | Indiquer le début du chapitre en secondes. | Nombre | Obligatoire | Aucune | Nombre fini, positif ou nul. La liste est triée selon cette valeur. |
+| `endTime` | Indiquer la fin du chapitre en secondes. | Nombre ou `null` | Optionnelle | `null` | Lorsqu’elle existe, valeur finie supérieure ou égale à `startTime`. Elle peut être déduite du chapitre suivant lors de la normalisation. |
+| `origin` | Indiquer comment le chapitre a été créé, sans exposer le format source. | Valeur contrôlée | Obligatoire | Aucune | `imported`, `manual` ou `generated`. |
+
+Un Episode sans section `navigation` est interprété comme un Episode dont la liste de chapitres est vide. Cette règle préserve la compatibilité avec les Episodes V1 créés avant l’introduction de la navigation.
+
+Les chapitres importés depuis ID3, M4A ou un futur format utilisent exactement le même modèle que les chapitres saisis manuellement ou produits automatiquement. Aucune trame ID3, aucun atom MP4 et aucune donnée propre à un parseur ne doit entrer dans l’Episode.
+
+L’importeur extrait et normalise. L’Episode conserve. Le Player affiche. Le Publisher restitue sans réécrire les choix éditoriaux.
 
 ### `brand`
 
@@ -189,21 +222,23 @@ Importer → Créer un Episode → Prévisualiser → Exporter → Publier
 
 Le Studio reçoit des fichiers choisis ou déposés par l’utilisateur. Il vérifie leur type et collecte les informations disponibles : nom, taille, durée, dimensions et langue renseignée.
 
+Lorsqu’un importeur détecte des chapitres, il retourne une liste normalisée. Le Studio peut alors affecter cette liste à `navigation.chapters`. L’importeur ne conserve pas cette donnée et ne décide pas de sa présentation.
+
 ### Créer un Episode
 
-Le Studio crée un Episode dès que le travail commence. Chaque fichier valide alimente une propriété de `media`. Le nom du fichier audio peut initialiser le titre, sans empêcher sa modification ultérieure.
+Le Studio crée un Episode dès que le travail commence. Chaque fichier valide alimente une propriété de `media`. Le nom du fichier audio peut initialiser le titre, sans empêcher sa modification ultérieure. La navigation détectée ou saisie enrichit ensuite ce même Episode.
 
 À partir de ce moment, l’interface manipule l’Episode. Elle ne maintient pas trois modèles concurrents pour l’image, l’audio et la transcription.
 
 ### Prévisualiser
 
-Le lecteur reçoit l’Episode et résout ses références de ressources. Il affiche les métadonnées et applique la présentation sans écrire d’état de lecture dans le modèle.
+Le lecteur reçoit l’Episode et résout ses références de ressources. Il affiche les métadonnées, la navigation disponible et la présentation sans extraire lui-même les chapitres ni écrire d’état de lecture dans le modèle.
 
 La position audio, le cue actif, la recherche courante et l’ouverture des cartes d’import sont des états d’interface temporaires.
 
 ### Exporter
 
-Le moteur vérifie que l’Episode satisfait le profil d’export V1. Il transforme ensuite le modèle en HTML, CSS, JavaScript et ressources locales.
+Le moteur vérifie que l’Episode satisfait le profil d’export V1. Il transforme ensuite le modèle en HTML, CSS, JavaScript et ressources locales. Lorsqu’ils existent, les chapitres sont publiés dans leur forme normalisée, sans transformation éditoriale implicite.
 
 Il ne modifie pas l’Episode pour refléter les chemins internes du dossier généré. La correspondance entre références sources et chemins relatifs appartient au processus d’export.
 
@@ -220,6 +255,12 @@ Un Episode ne contient aucun élément DOM, sélecteur CSS, gestionnaire d’év
 ### Aucun état d’interface
 
 Un Episode ne stocke pas la position de lecture courante, le cue actif, la valeur d’un champ non validé, le focus, un panneau ouvert ou un état de drag & drop.
+
+La sélection courante d’un chapitre, l’ouverture du sommaire et la progression momentanée de lecture restent également hors du modèle Episode.
+
+### Source de vérité de la navigation
+
+`navigation.chapters` est l’unique source de vérité des chapitres. Le Player et le Publisher la consomment sans maintenir de copie éditoriale concurrente. Un importeur peut proposer une nouvelle liste, mais son intégration dans l’Episode relève du flux de création ou d’édition.
 
 ### Sérialisation
 
@@ -254,10 +295,11 @@ La V1 comprend :
 - un visuel principal ;
 - un fichier audio principal ;
 - une transcription synchronisée ;
+- une liste facultative de chapitres normalisés ;
 - un thème AudioCaption ou une personnalisation de marque limitée ;
 - un export HTML autonome.
 
-Elle ne gère qu’une langue principale et une seule ressource de chaque catégorie.
+Elle ne gère qu’une langue principale, une seule ressource de chaque catégorie et un seul niveau de chapitres. Elle ne prévoit ni sous-chapitre, ni favori, ni note, ni résumé automatique.
 
 ### Évolutions compatibles envisagées
 
@@ -265,8 +307,12 @@ Ces évolutions ne sont pas implémentées par la présente spécification :
 
 - **plusieurs langues** : ajout d’une liste de versions linguistiques liées à une langue principale ;
 - **plusieurs transcriptions** : évolution de `captions` vers une collection de pistes identifiées par langue et usage ;
-- **chapitres** : ajout d’une collection ordonnée avec titre et timestamp ;
+- **sous-chapitres** : évolution explicite vers une hiérarchie, avec migration des listes V1 sans niveau imbriqué ;
+- **signets et annotations** : données liées à un Episode ou à un chapitre, séparées de la définition éditoriale des chapitres ;
+- **chapitres multilingues** : titres localisés sans dupliquer inutilement les timestamps ;
 - **résumé produit par IA** : ajout d’un enrichissement traçable, distinct de la description éditoriale validée ;
+- **résumés de chapitres** : enrichissements facultatifs, distincts du titre et identifiant leur origine ;
+- **progression de lecture** : état propre à un lecteur ou à un utilisateur, référencé par l’identifiant de l’Episode mais conservé hors de l’objet éditorial ;
 - **SEO** : ajout de métadonnées de publication sans les mélanger aux données nécessaires à la lecture ;
 - **analytics** : association de mesures externes à l’identifiant de l’Episode ;
 - **variantes de visuel** : collection de ressources avec rôle, dimensions et contexte d’utilisation ;
@@ -317,11 +363,24 @@ Le passage d’une propriété unique à une collection doit être pris en charg
 - `ready` doit-il être stocké ou toujours calculé ?
 - Faut-il distinguer plus tard `ready`, `exported` et `published`, ou conserver les résultats de publication dans un modèle séparé ?
 
+### Navigation et chapitres
+
+- Comment garantir la stabilité des identifiants lors d’un nouvel import du même fichier audio ?
+- Un nouvel import remplace-t-il les chapitres existants ou doit-il être fusionné avec les chapitres manuels ?
+- Les temps de début dupliqués doivent-ils toujours être interdits au niveau du modèle ?
+- Faut-il autoriser les chevauchements explicites ou imposer que `endTime` ne dépasse jamais le chapitre suivant ?
+- Comment représenter plus tard les titres multilingues sans compliquer la structure V1 ?
+- Les signets, annotations et progressions futures appartiennent-ils à une extension de l’Episode ou à un modèle utilisateur séparé ?
+
 ## Décisions de modélisation retenues
 
 - `Episode` est la source de vérité commune à tout AudioCaption.
 - Un brouillon peut être incomplet ; l’export applique une validation plus stricte.
 - Les métadonnées, les médias, la marque et la présentation ont des responsabilités distinctes.
+- `navigation.chapters` est la source de vérité des chapitres, quel que soit leur mode de création.
+- L’absence de `navigation` équivaut à une liste de chapitres vide pour les Episodes V1 existants.
+- Un chapitre est normalisé, indépendant du format audio source et limité à un seul niveau en V1.
+- `origin` distingue un chapitre importé, manuel ou généré sans modifier sa structure.
 - Les ressources sont représentées par des références abstraites, sans chemin local durable dans le modèle.
 - Les états temporaires du lecteur et du Studio sont exclus.
 - La V1 utilise une ressource principale par catégorie.
