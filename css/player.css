@@ -395,6 +395,83 @@ body {
   font-size: var(--ac-text-caption);
 }
 
+.ac-chapters {
+  margin-top: 22px;
+  border-block: 1px solid var(--ac-line);
+}
+
+.ac-chapters[hidden] {
+  display: none;
+}
+
+.ac-chapters-title {
+  margin: 0;
+  padding: 14px 2px 10px;
+  color: var(--ac-ink);
+  font-size: var(--ac-text-secondary);
+  line-height: var(--ac-leading-caption);
+}
+
+.ac-chapters-title span {
+  color: var(--ac-muted);
+  font-weight: 500;
+}
+
+.ac-chapters-list {
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+
+.ac-chapters-list li + li {
+  border-top: 1px solid var(--ac-line);
+}
+
+.ac-chapter-button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 11px 10px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--ac-radius-md) var(--ac-radius-md) 0;
+  color: var(--ac-ink);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ac-chapter-button:hover {
+  background: var(--ac-surface);
+}
+
+.ac-chapter-button:focus-visible {
+  outline: 3px solid var(--ac-focus-ring);
+  outline-offset: 2px;
+}
+
+.ac-chapter-button[aria-current="true"] {
+  border-left-color: var(--ac-accent);
+  background: var(--ac-accent-soft);
+  color: var(--ac-accent-strong);
+}
+
+.ac-chapter-time {
+  color: var(--ac-muted);
+  font-size: var(--ac-text-caption);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.ac-chapter-title {
+  overflow-wrap: anywhere;
+  font-size: var(--ac-text-secondary);
+  font-weight: 600;
+}
+
 .ac-loaders {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

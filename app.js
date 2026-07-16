@@ -14,6 +14,9 @@ const currentTime = document.querySelector("#ac-current-time");
 const duration = document.querySelector("#ac-duration");
 const volume = document.querySelector("#ac-volume");
 const playerStatus = document.querySelector("#ac-player-status");
+const chaptersNavigation = document.querySelector("#ac-chapters");
+const chaptersCount = document.querySelector("#ac-chapters-count");
+const chaptersList = document.querySelector("#ac-chapters-list");
 const episodeTitle = document.querySelector("#ac-episode-title");
 const episodeDuration = document.querySelector("#ac-episode-duration");
 const sobrietyActualSize = document.querySelector("#ac-sobriety-actual-size");
@@ -40,6 +43,28 @@ let activeSearchResultIndex = -1;
 let pendingImageImportFile = null;
 let pendingAudioImportFile = null;
 let areImportCardsExpanded = true;
+let audioChapterImportVersion = 0;
+let createChapterEngine;
+let importAudioChapters;
+let episode = {
+  navigation: {
+    chapters: [],
+  },
+};
+let chapterEngine = null;
+
+const chapterModulesReady = Promise.all([
+  import("./src/domain/chapterEngine.js"),
+  import("./src/importers/chapterImporter.js"),
+])
+  .then(([engineModule, importerModule]) => {
+    createChapterEngine = engineModule.createChapterEngine;
+    importAudioChapters = importerModule.importAudioChapters;
+    chapterEngine = createChapterEngine(episode.navigation.chapters);
+    renderChapters();
+    return true;
+  })
+  .catch(() => false);
 
 const loadedFileSizes = {
   image: null,
@@ -267,6 +292,106 @@ function setPlayerStatus(message) {
   playerStatus.textContent = `${message}${ignoredFilesMessage}`;
 }
 
+function updateActiveChapter() {
+  if (!chapterEngine) {
+    return;
+  }
+
+  const activeChapter = chapterEngine.activeAt(audio.currentTime);
+
+  chaptersList.querySelectorAll(".ac-chapter-button").forEach((button) => {
+    if (button.dataset.chapterId === activeChapter?.id) {
+      button.setAttribute("aria-current", "true");
+    } else {
+      button.removeAttribute("aria-current");
+    }
+  });
+}
+
+function renderChapters() {
+  const chapters = chapterEngine.toJSON();
+  chaptersList.replaceChildren();
+  chaptersNavigation.hidden = chapters.length === 0;
+
+  if (!chapters.length) {
+    chaptersCount.textContent = "";
+    return;
+  }
+
+  chaptersCount.textContent = `${chapters.length} chapitre${chapters.length > 1 ? "s" : ""}`;
+
+  chapters.forEach((chapter) => {
+    const item = document.createElement("li");
+    const button = document.createElement("button");
+    const startTime = formatTime(chapter.startTime);
+
+    button.className = "ac-chapter-button";
+    button.type = "button";
+    button.dataset.chapterId = chapter.id;
+    button.setAttribute("aria-label", `${chapter.title}, ${startTime}`);
+
+    const time = document.createElement("span");
+    const title = document.createElement("span");
+
+    time.className = "ac-chapter-time";
+    time.setAttribute("aria-hidden", "true");
+    time.textContent = startTime;
+    title.className = "ac-chapter-title";
+    title.textContent = chapter.title;
+    button.append(time, title);
+    button.addEventListener("click", () => {
+      audio.currentTime = chapter.startTime;
+      updateActiveChapter();
+    });
+
+    item.appendChild(button);
+    chaptersList.appendChild(item);
+  });
+
+  updateActiveChapter();
+}
+
+function replaceEpisodeChapters(chapters) {
+  const nextEngine = createChapterEngine(chapters);
+  const validation = nextEngine.validate();
+
+  if (!validation.valid) {
+    throw new Error("Les chapitres importés ne respectent pas le modèle Episode.");
+  }
+
+  episode = {
+    ...episode,
+    navigation: {
+      ...episode.navigation,
+      chapters: nextEngine.toJSON(),
+    },
+  };
+  chapterEngine = createChapterEngine(episode.navigation.chapters);
+  renderChapters();
+}
+
+async function loadAudioChapters(file, importVersion) {
+  const modulesAreReady = await chapterModulesReady;
+
+  if (!modulesAreReady || importVersion !== audioChapterImportVersion) {
+    return;
+  }
+
+  let result;
+
+  try {
+    result = await importAudioChapters(file);
+  } catch {
+    result = { chapters: [] };
+  }
+
+  if (importVersion !== audioChapterImportVersion) {
+    return;
+  }
+
+  replaceEpisodeChapters(result.chapters);
+}
+
 function getFileExtension(file) {
   return file.name.split(".").pop().toLowerCase();
 }
@@ -381,7 +506,15 @@ function loadImageFile(file) {
 }
 
 function loadAudioFile(file) {
+  const chapterImportVersion = ++audioChapterImportVersion;
+
   pendingAudioImportFile = file;
+
+  if (chapterEngine) {
+    replaceEpisodeChapters([]);
+  }
+
+  void loadAudioChapters(file, chapterImportVersion);
   resetImportCard("audio");
   setControlsEnabled(false);
   isSeeking = false;
@@ -589,7 +722,13 @@ audio.addEventListener("loadedmetadata", () => {
   setPlayerStatus("Audio chargé. Vous pouvez commencer la lecture.");
 });
 audio.addEventListener("error", () => {
+  audioChapterImportVersion += 1;
   pendingAudioImportFile = null;
+
+  if (chapterEngine) {
+    replaceEpisodeChapters([]);
+  }
+
   resetImportCard("audio");
   setControlsEnabled(false);
   setPlayerStatus("Impossible de charger ce fichier audio.");
@@ -600,6 +739,7 @@ audio.addEventListener("ended", updatePlayState);
 audio.addEventListener("timeupdate", () => {
   updateProgress();
   syncTranscript();
+  updateActiveChapter();
 });
 
 updatePlayState();
