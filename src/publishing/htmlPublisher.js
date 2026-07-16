@@ -69,8 +69,52 @@ ${description}${author}        </header>
           Votre navigateur ne permet pas la lecture de cet épisode audio.
         </audio>
 
+        <div class="ac-player-controls" aria-label="Lecteur audio">
+          <button class="ac-play" type="button" data-player-toggle aria-label="Lire" disabled>
+            <span data-player-icon aria-hidden="true">▶</span>
+          </button>
+          <div class="ac-timeline">
+            <div class="ac-time-row">
+              <span data-player-current-time>00:00</span>
+              <span data-player-duration>00:00</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="0"
+              value="0"
+              step="0.01"
+              data-player-progress
+              aria-label="Progression audio"
+              disabled
+            >
+          </div>
+          <label class="ac-volume">
+            <span>Volume</span>
+            <input type="range" min="0" max="1" value="1" step="0.01" data-player-volume>
+          </label>
+        </div>
+        <p class="ac-player-status" data-player-status role="status">Chargement de l’épisode…</p>
+
         <section class="ac-transcript-section" aria-labelledby="ac-transcript-title">
           <h2 id="ac-transcript-title">Transcription</h2>
+          <div class="ac-transcript-tools">
+            <label>
+              <span>Rechercher dans la transcription</span>
+              <input
+                type="search"
+                data-transcript-search
+                aria-controls="ac-transcript"
+                placeholder="Mot ou expression"
+                disabled
+              >
+            </label>
+            <div class="ac-search-navigation" role="group" aria-label="Navigation dans les résultats">
+              <span data-search-counter role="status" aria-live="polite">0 / 0</span>
+              <button type="button" data-search-previous aria-label="Résultat précédent" disabled>Précédent</button>
+              <button type="button" data-search-next aria-label="Résultat suivant" disabled>Suivant</button>
+            </div>
+          </div>
           <div
             class="ac-transcript"
             id="ac-transcript"
@@ -84,7 +128,7 @@ ${description}${author}        </header>
     </main>
 
     <script type="application/json" id="ac-episode-data">${episodeData}</script>
-    <script src="${escapeHtml(paths.script)}" defer></script>
+    <script type="module" src="${escapeHtml(paths.script)}"></script>
   </body>
 </html>
 `;
