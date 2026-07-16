@@ -1,3 +1,6 @@
+(function initializeChapterImporter(global) {
+"use strict";
+
 const UNKNOWN_FORMAT_WARNING = "Le format de chapitres de ce fichier n’est pas encore pris en charge.";
 
 function readAscii(bytes, start, length) {
@@ -341,7 +344,7 @@ function unsupportedResult(format, warning = UNKNOWN_FORMAT_WARNING) {
  * Extrait les chapitres MP3 ID3v2.3/v2.4 CHAP depuis une source binaire.
  * Les autres formats sont détectés mais ne sont pas annoncés comme pris en charge.
  */
-export async function importAudioChapters(audioSource) {
+async function importAudioChapters(audioSource) {
   let bytes;
 
   try {
@@ -373,3 +376,8 @@ export async function importAudioChapters(audioSource) {
     warnings: [...extracted.warnings, ...normalized.warnings],
   };
 }
+
+global.AudioCaption = Object.assign(global.AudioCaption ?? {}, {
+  importAudioChapters,
+});
+})(globalThis);

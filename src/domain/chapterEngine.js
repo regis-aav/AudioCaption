@@ -1,6 +1,9 @@
+(function initializeChapterEngine(global) {
+"use strict";
+
 const CHAPTER_ORIGINS = new Set(["imported", "manual", "generated"]);
 
-export class ChapterEngineError extends Error {
+class ChapterEngineError extends Error {
   constructor(code, message, details = []) {
     super(message);
     this.name = "ChapterEngineError";
@@ -161,7 +164,7 @@ function copyResult(chapter) {
  * Crée une façade isolant toutes les lectures et mutations de chapitres.
  * Les intervalles temporels sont semi-ouverts : début inclus, fin exclue.
  */
-export function createChapterEngine(chapters = []) {
+function createChapterEngine(chapters = []) {
   if (!Array.isArray(chapters)) {
     throw new ChapterEngineError("INVALID_COLLECTION", "Les chapitres doivent être fournis dans un tableau.");
   }
@@ -285,3 +288,9 @@ export function createChapterEngine(chapters = []) {
     toJSON,
   });
 }
+
+global.AudioCaption = Object.assign(global.AudioCaption ?? {}, {
+  ChapterEngineError,
+  createChapterEngine,
+});
+})(globalThis);

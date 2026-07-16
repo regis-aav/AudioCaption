@@ -44,27 +44,13 @@ let pendingImageImportFile = null;
 let pendingAudioImportFile = null;
 let areImportCardsExpanded = true;
 let audioChapterImportVersion = 0;
-let createChapterEngine;
-let importAudioChapters;
 let episode = {
   navigation: {
     chapters: [],
   },
 };
-let chapterEngine = null;
-
-const chapterModulesReady = Promise.all([
-  import("./src/domain/chapterEngine.js"),
-  import("./src/importers/chapterImporter.js"),
-])
-  .then(([engineModule, importerModule]) => {
-    createChapterEngine = engineModule.createChapterEngine;
-    importAudioChapters = importerModule.importAudioChapters;
-    chapterEngine = createChapterEngine(episode.navigation.chapters);
-    renderChapters();
-    return true;
-  })
-  .catch(() => false);
+const { createChapterEngine, importAudioChapters } = globalThis.AudioCaption;
+let chapterEngine = createChapterEngine(episode.navigation.chapters);
 
 const loadedFileSizes = {
   image: null,
@@ -371,12 +357,6 @@ function replaceEpisodeChapters(chapters) {
 }
 
 async function loadAudioChapters(file, importVersion) {
-  const modulesAreReady = await chapterModulesReady;
-
-  if (!modulesAreReady || importVersion !== audioChapterImportVersion) {
-    return;
-  }
-
   let result;
 
   try {

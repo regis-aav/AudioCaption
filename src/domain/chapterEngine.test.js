@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ChapterEngineError, createChapterEngine } from "./chapterEngine.js";
+import { ChapterEngineError, createChapterEngine } from "./chapterEngine.module.mjs";
 
 function chapter(id, title, startTime, endTime = null, origin = "manual") {
   return { id, title, startTime, endTime, origin };
