@@ -2,6 +2,7 @@ const audio = document.querySelector("#ac-audio");
 const player = document.querySelector(".ac-player");
 const cover = document.querySelector("#ac-cover");
 const transcript = document.querySelector("#ac-transcript");
+const subtitleWindow = document.querySelector("#ac-subtitle-window");
 const transcriptSearch = document.querySelector("#ac-transcript-search");
 const searchResults = document.querySelector("#ac-search-results");
 const searchCounter = document.querySelector("#ac-search-counter");
@@ -220,6 +221,31 @@ function renderTranscript() {
   });
 }
 
+function renderSubtitleWindow() {
+  subtitleWindow.replaceChildren();
+
+  if (activeCueIndex === -1) {
+    subtitleWindow.hidden = true;
+    return;
+  }
+
+  const cue = cues[activeCueIndex];
+  const button = document.createElement("button");
+
+  button.className = "ac-contextual-cue";
+  button.type = "button";
+  button.textContent = cue.text;
+  button.setAttribute("aria-current", "true");
+  button.addEventListener("click", () => {
+    audio.currentTime = cue.start;
+    audio.play();
+  });
+
+  subtitleWindow.appendChild(button);
+
+  subtitleWindow.hidden = false;
+}
+
 function setActiveCue(index) {
   if (index === activeCueIndex) {
     return;
@@ -234,6 +260,7 @@ function setActiveCue(index) {
   activeCueIndex = index;
 
   if (index === -1) {
+    renderSubtitleWindow();
     return;
   }
 
@@ -241,6 +268,7 @@ function setActiveCue(index) {
 
   activeButton.classList.add("is-active");
   activeButton.scrollIntoView({ behavior: "smooth", block: "center" });
+  renderSubtitleWindow();
 }
 
 function syncTranscript() {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AudioCaption - Vos contenus audio, enrichis d'une transcription synchronisée.</title>
+    <title>AudioCaption</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,94 +13,139 @@
     <main class="ac-page">
       <header class="ac-hero">
         <p class="ac-kicker">AudioCaption</p>
-        <h1 class="ac-title">Vos contenus audio, enrichis d'une transcription synchronisée.</h1>
-        <p class="ac-intro">
-          Un lecteur audio sobre pour publier un podcast, une image et une transcription synchronisée sans encoder de vidéo.
-        </p>
       </header>
 
       <section class="ac-player" aria-label="Lecteur AudioCaption">
         <article class="ac-episode-card" aria-labelledby="ac-episode-title">
-          <div class="ac-media">
-            <img class="ac-cover" id="ac-cover" alt="Image du programme audio">
-            <div class="ac-cover-placeholder">
-              <svg class="ac-cover-icon" viewBox="0 0 48 48" aria-hidden="true">
-                <rect x="6" y="8" width="36" height="32" rx="5"></rect>
-                <circle cx="17" cy="19" r="3"></circle>
-                <path d="m10 35 10-10 7 7 5-5 6 8"></path>
-              </svg>
-              <p class="ac-cover-placeholder-title">Déposez votre visuel</p>
-              <p class="ac-cover-placeholder-details">Format recommandé : 16:9<br>1920 × 1080 px</p>
+          <div class="ac-episode-summary">
+            <div class="ac-media">
+              <img class="ac-cover" id="ac-cover" alt="Image du programme audio">
+              <div class="ac-cover-placeholder">
+                <svg class="ac-cover-icon" viewBox="0 0 48 48" aria-hidden="true">
+                  <rect x="6" y="8" width="36" height="32" rx="5"></rect>
+                  <circle cx="17" cy="19" r="3"></circle>
+                  <path d="m10 35 10-10 7 7 5-5 6 8"></path>
+                </svg>
+                <p class="ac-cover-placeholder-title">Déposez votre visuel</p>
+                <p class="ac-cover-placeholder-details">Format recommandé : 16:9<br>1920 × 1080 px</p>
+              </div>
             </div>
           </div>
           <div class="ac-episode-details">
             <p class="ac-episode-label">Épisode</p>
             <h2 class="ac-episode-title" id="ac-episode-title" data-episode-field="title">Titre de l’épisode</h2>
             <p class="ac-episode-description" data-episode-field="description">Une courte présentation de cet épisode sera bientôt disponible.</p>
-            <dl class="ac-episode-meta">
-              <div>
-                <dt>Durée</dt>
-                <dd id="ac-episode-duration" data-episode-field="duration">--:--</dd>
+
+            <div class="ac-episode-meta">
+              <span class="ac-episode-meta-item">
+                <svg class="ac-episode-meta-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+                <span id="ac-episode-duration" data-episode-field="duration">--:--</span>
+              </span>
+              <span class="ac-episode-meta-item">
+                <svg class="ac-episode-meta-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3"></circle>
+                  <path d="M6 19c0-3.3 2.7-6 6-6s6 2.7 6 6"></path>
+                </svg>
+                <span data-episode-field="author">À venir</span>
+              </span>
+            </div>
+
+            <audio id="ac-audio" preload="metadata"></audio>
+
+            <div class="ac-controls" aria-label="Emplacement du futur lecteur AudioCaption">
+              <button class="ac-play" id="ac-play" type="button" aria-label="Lire" disabled>
+                <span class="ac-play-icon" aria-hidden="true">▶</span>
+              </button>
+
+              <div class="ac-timeline">
+                <div class="ac-time-row">
+                  <span class="ac-time" id="ac-current-time">00:00</span>
+                  <span class="ac-time" id="ac-duration">00:00</span>
+                </div>
+                <input class="ac-progress" id="ac-progress" type="range" min="0" max="100" value="0" step="0.01" aria-label="Progression audio" disabled>
               </div>
-              <div>
-                <dt>Auteur</dt>
-                <dd data-episode-field="author">À venir</dd>
-              </div>
-            </dl>
-            <section class="ac-sobriety" aria-labelledby="ac-sobriety-title">
-              <h3 id="ac-sobriety-title">🌱 Pourquoi AudioCaption ?</h3>
-              <p>Parce que tous les contenus audio n'ont pas besoin d'une vidéo pour proposer une transcription synchronisée.</p>
-              <dl class="ac-sobriety-comparison">
-                <div>
-                  <dt>🎧 Audio + image + sous-titres</dt>
-                  <dd id="ac-sobriety-actual-size">—</dd>
-                </div>
-                <div>
-                  <dt>🎬 Vidéo Full HD estimée</dt>
-                  <dd id="ac-sobriety-video-size">—</dd>
-                </div>
-                <div>
-                  <dt>💚 Économie estimée</dt>
-                  <dd id="ac-sobriety-savings">—</dd>
-                </div>
-              </dl>
-              <p class="ac-sobriety-note">Une image, un fichier audio et une transcription synchronisée suffisent pour offrir une expérience de lecture et d'écoute complète, tout en réduisant jusqu'à 95 % le volume de données par rapport à une vidéo équivalente.</p>
-            </section>
+
+              <label class="ac-volume">
+                <span class="ac-volume-label">Volume</span>
+                <input class="ac-volume-slider" id="ac-volume" type="range" min="0" max="1" value="1" step="0.01" disabled>
+              </label>
+            </div>
+
+            <div class="ac-subtitle-window" id="ac-subtitle-window" aria-label="Sous-titres synchronisés" hidden></div>
+
+            <p class="ac-future-note" id="ac-player-status" role="status">Chargez un fichier audio pour commencer.</p>
+
+            <div class="ac-loaders" aria-label="Chargement des médias">
+              <label class="ac-file" data-import-card="image">
+                <span class="ac-file-default">
+                  <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
+                    <rect x="4" y="6" width="24" height="20" rx="3"></rect>
+                    <circle cx="12" cy="13" r="2"></circle>
+                    <path d="m7 23 7-7 5 5 3-3 3 3"></path>
+                  </svg>
+                  <span class="ac-file-title">Visuel</span>
+                  <span class="ac-file-help">Déposez une image<br>ou cliquez pour sélectionner</span>
+                  <span class="ac-file-formats">JPG • PNG • WEBP</span>
+                </span>
+                <span class="ac-file-success" role="status" aria-live="polite" hidden>
+                  <span class="ac-file-check" aria-hidden="true">✓</span>
+                  <span class="ac-file-success-title">Visuel chargé</span>
+                  <span class="ac-file-name" data-import-file-name></span>
+                  <span class="ac-file-size" data-import-file-size></span>
+                </span>
+                <input id="ac-image-input" type="file" accept="image/*">
+              </label>
+              <label class="ac-file" data-import-card="audio">
+                <span class="ac-file-default">
+                  <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
+                    <path d="M12 23V9l13-3v14"></path>
+                    <circle cx="8.5" cy="23" r="3.5"></circle>
+                    <circle cx="21.5" cy="20" r="3.5"></circle>
+                  </svg>
+                  <span class="ac-file-title">Audio</span>
+                  <span class="ac-file-help">Déposez un fichier audio<br>ou cliquez pour sélectionner</span>
+                  <span class="ac-file-formats">MP3 • WAV • M4A • OGG</span>
+                </span>
+                <span class="ac-file-success" role="status" aria-live="polite" hidden>
+                  <span class="ac-file-check" aria-hidden="true">✓</span>
+                  <span class="ac-file-success-title">Audio chargé</span>
+                  <span class="ac-file-name" data-import-file-name></span>
+                  <span class="ac-file-size" data-import-file-size></span>
+                </span>
+                <input id="ac-audio-input" type="file" accept="audio/*,.mp3">
+              </label>
+              <label class="ac-file" data-import-card="subtitles">
+                <span class="ac-file-default">
+                  <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
+                    <rect x="4" y="6" width="24" height="20" rx="3"></rect>
+                    <path d="M9 13h6M18 13h5M9 19h4M16 19h7"></path>
+                  </svg>
+                  <span class="ac-file-title">Sous-titres</span>
+                  <span class="ac-file-help">Déposez une transcription<br>ou cliquez pour sélectionner</span>
+                  <span class="ac-file-formats">SRT • VTT</span>
+                </span>
+                <span class="ac-file-success" role="status" aria-live="polite" hidden>
+                  <span class="ac-file-check" aria-hidden="true">✓</span>
+                  <span class="ac-file-success-title">Sous-titres chargés</span>
+                  <span class="ac-file-name" data-import-file-name></span>
+                  <span class="ac-file-size" data-import-file-size></span>
+                </span>
+                <input id="ac-subtitle-input" type="file" accept=".srt,.vtt,text/plain">
+              </label>
+            </div>
+
+            <div class="ac-imports-ready" id="ac-imports-ready" role="status" hidden>
+              <span class="ac-imports-ready-label"><span aria-hidden="true">✓</span> Épisode prêt</span>
+              <span aria-hidden="true">·</span>
+              <button class="ac-imports-edit" id="ac-imports-edit" type="button">Modifier les médias…</button>
+            </div>
           </div>
         </article>
 
-        <div class="ac-panel">
-          <div class="ac-panel-header">
-            <p class="ac-section-label">Prototype player</p>
-            <h2 class="ac-panel-title">Podcast augmenté par sous-titres</h2>
-            <p class="ac-panel-text">
-              Chargez vos médias, puis naviguez dans la transcription synchronisée.
-            </p>
-          </div>
-
-          <audio id="ac-audio" preload="metadata"></audio>
-
-          <div class="ac-controls" aria-label="Emplacement du futur lecteur AudioCaption">
-            <button class="ac-play" id="ac-play" type="button" aria-label="Lire" disabled>
-              <span class="ac-play-icon" aria-hidden="true">▶</span>
-            </button>
-
-            <div class="ac-timeline">
-              <div class="ac-time-row">
-                <span class="ac-time" id="ac-current-time">00:00</span>
-                <span class="ac-time" id="ac-duration">00:00</span>
-              </div>
-              <input class="ac-progress" id="ac-progress" type="range" min="0" max="100" value="0" step="0.01" aria-label="Progression audio" disabled>
-            </div>
-
-            <label class="ac-volume">
-              <span class="ac-volume-label">Volume</span>
-              <input class="ac-volume-slider" id="ac-volume" type="range" min="0" max="1" value="1" step="0.01" disabled>
-            </label>
-          </div>
-
-          <p class="ac-future-note" id="ac-player-status" role="status">Chargez un fichier audio pour commencer.</p>
-
+        <section class="ac-consultation" aria-label="Zone de consultation">
           <nav class="ac-chapters" id="ac-chapters" aria-label="Sommaire de l’épisode" hidden>
             <h3 class="ac-chapters-title">
               Sommaire <span aria-hidden="true">·</span> <span id="ac-chapters-count"></span>
@@ -108,88 +153,45 @@
             <ol class="ac-chapters-list" id="ac-chapters-list"></ol>
           </nav>
 
-          <div class="ac-loaders" aria-label="Chargement des médias">
-            <label class="ac-file" data-import-card="image">
-              <span class="ac-file-default">
-                <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
-                  <rect x="4" y="6" width="24" height="20" rx="3"></rect>
-                  <circle cx="12" cy="13" r="2"></circle>
-                  <path d="m7 23 7-7 5 5 3-3 3 3"></path>
-                </svg>
-                <span class="ac-file-title">Visuel</span>
-                <span class="ac-file-help">Déposez une image<br>ou cliquez pour sélectionner</span>
-                <span class="ac-file-formats">JPG • PNG • WEBP</span>
-              </span>
-              <span class="ac-file-success" role="status" aria-live="polite" hidden>
-                <span class="ac-file-check" aria-hidden="true">✓</span>
-                <span class="ac-file-success-title">Visuel chargé</span>
-                <span class="ac-file-name" data-import-file-name></span>
-                <span class="ac-file-size" data-import-file-size></span>
-              </span>
-              <input id="ac-image-input" type="file" accept="image/*">
-            </label>
-            <label class="ac-file" data-import-card="audio">
-              <span class="ac-file-default">
-                <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
-                  <path d="M12 23V9l13-3v14"></path>
-                  <circle cx="8.5" cy="23" r="3.5"></circle>
-                  <circle cx="21.5" cy="20" r="3.5"></circle>
-                </svg>
-                <span class="ac-file-title">Audio</span>
-                <span class="ac-file-help">Déposez un fichier audio<br>ou cliquez pour sélectionner</span>
-                <span class="ac-file-formats">MP3 • WAV • M4A • OGG</span>
-              </span>
-              <span class="ac-file-success" role="status" aria-live="polite" hidden>
-                <span class="ac-file-check" aria-hidden="true">✓</span>
-                <span class="ac-file-success-title">Audio chargé</span>
-                <span class="ac-file-name" data-import-file-name></span>
-                <span class="ac-file-size" data-import-file-size></span>
-              </span>
-              <input id="ac-audio-input" type="file" accept="audio/*,.mp3">
-            </label>
-            <label class="ac-file" data-import-card="subtitles">
-              <span class="ac-file-default">
-                <svg class="ac-file-icon" viewBox="0 0 32 32" aria-hidden="true">
-                  <rect x="4" y="6" width="24" height="20" rx="3"></rect>
-                  <path d="M9 13h6M18 13h5M9 19h4M16 19h7"></path>
-                </svg>
-                <span class="ac-file-title">Sous-titres</span>
-                <span class="ac-file-help">Déposez une transcription<br>ou cliquez pour sélectionner</span>
-                <span class="ac-file-formats">SRT • VTT</span>
-              </span>
-              <span class="ac-file-success" role="status" aria-live="polite" hidden>
-                <span class="ac-file-check" aria-hidden="true">✓</span>
-                <span class="ac-file-success-title">Sous-titres chargés</span>
-                <span class="ac-file-name" data-import-file-name></span>
-                <span class="ac-file-size" data-import-file-size></span>
-              </span>
-              <input id="ac-subtitle-input" type="file" accept=".srt,.vtt,text/plain">
-            </label>
-          </div>
-
-          <div class="ac-imports-ready" id="ac-imports-ready" role="status" hidden>
-            <span class="ac-imports-ready-label"><span aria-hidden="true">✓</span> Épisode prêt</span>
-            <span aria-hidden="true">·</span>
-            <button class="ac-imports-edit" id="ac-imports-edit" type="button">Modifier les médias…</button>
-          </div>
-
-          <div class="ac-transcript-search">
-            <div class="ac-search-row">
-              <label class="ac-search-label" for="ac-transcript-search">
-                <span>Rechercher dans la transcription</span>
-                <input id="ac-transcript-search" type="search" placeholder="Mot ou expression" aria-controls="ac-transcript" aria-describedby="ac-search-results">
-              </label>
-              <div class="ac-search-navigation" role="group" aria-label="Navigation dans les résultats">
-                <span class="ac-search-counter" id="ac-search-counter" aria-hidden="true">0 / 0</span>
-                <button class="ac-search-button" id="ac-search-previous" type="button" aria-label="Résultat précédent" disabled>Précédent</button>
-                <button class="ac-search-button" id="ac-search-next" type="button" aria-label="Résultat suivant" disabled>Suivant</button>
+          <div class="ac-transcript-panel">
+            <div class="ac-transcript-search">
+              <div class="ac-search-row">
+                <label class="ac-search-label" for="ac-transcript-search">
+                  <span>Rechercher dans la transcription</span>
+                  <input id="ac-transcript-search" type="search" placeholder="Mot ou expression" aria-controls="ac-transcript" aria-describedby="ac-search-results">
+                </label>
+                <div class="ac-search-navigation" role="group" aria-label="Navigation dans les résultats">
+                  <span class="ac-search-counter" id="ac-search-counter" aria-hidden="true">0 / 0</span>
+                  <button class="ac-search-button" id="ac-search-previous" type="button" aria-label="Résultat précédent" disabled>Précédent</button>
+                  <button class="ac-search-button" id="ac-search-next" type="button" aria-label="Résultat suivant" disabled>Suivant</button>
+                </div>
               </div>
+              <p class="ac-search-results" id="ac-search-results" role="status" aria-live="polite">Aucune transcription chargée.</p>
             </div>
-            <p class="ac-search-results" id="ac-search-results" role="status" aria-live="polite">Aucune transcription chargée.</p>
+
+            <div class="ac-transcript" id="ac-transcript" aria-label="Transcription synchronisée"></div>
           </div>
 
-          <div class="ac-transcript" id="ac-transcript" aria-label="Transcription synchronisée"></div>
-        </div>
+          <section class="ac-sobriety" aria-labelledby="ac-sobriety-title">
+            <h3 id="ac-sobriety-title">🌱 Pourquoi AudioCaption ?</h3>
+            <p>Parce que tous les contenus audio n'ont pas besoin d'une vidéo pour proposer une transcription synchronisée.</p>
+            <dl class="ac-sobriety-comparison">
+              <div>
+                <dt>🎧 Audio + image + sous-titres</dt>
+                <dd id="ac-sobriety-actual-size">—</dd>
+              </div>
+              <div>
+                <dt>🎬 Vidéo Full HD estimée</dt>
+                <dd id="ac-sobriety-video-size">—</dd>
+              </div>
+              <div>
+                <dt>💚 Économie estimée</dt>
+                <dd id="ac-sobriety-savings">—</dd>
+              </div>
+            </dl>
+            <p class="ac-sobriety-note">Une image, un fichier audio et une transcription synchronisée suffisent pour offrir une expérience de lecture et d'écoute complète, tout en réduisant jusqu'à 95 % le volume de données par rapport à une vidéo équivalente.</p>
+          </section>
+        </section>
       </section>
     </main>
 

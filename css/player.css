@@ -45,44 +45,50 @@ body {
 }
 
 .ac-page {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1270px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 64px 0 112px;
+  padding: 20px 0 34px;
 }
 
 .ac-hero {
-  margin-bottom: 44px;
+  margin-bottom: 8px;
 }
 
 .ac-player {
   display: grid;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
-  gap: 40px;
-  align-items: stretch;
+  gap: 14px;
 }
 
-.ac-episode-card,
-.ac-panel {
+.ac-episode-card {
   overflow: hidden;
+  padding: 16px;
   border: 1px solid var(--ac-line);
   border-radius: var(--ac-radius-lg);
   background: #ffffff;
   transition: border-color 180ms ease;
 }
 
-.ac-player.is-dragging .ac-episode-card,
-.ac-player.is-dragging .ac-panel {
+.ac-player.is-dragging .ac-episode-card {
   border-color: var(--ac-accent);
 }
 
 .ac-episode-card {
-  align-self: start;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+  gap: 38px;
+  align-items: stretch;
+}
+
+.ac-episode-summary {
+  min-width: 0;
 }
 
 .ac-media {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1.35 / 1;
+  overflow: hidden;
+  border-radius: var(--ac-radius-lg);
   background: var(--ac-surface-strong);
 }
 
@@ -144,67 +150,84 @@ body {
 }
 
 .ac-episode-details {
-  padding: 24px clamp(22px, 3vw, 30px) 26px;
-  border-top: 1px solid var(--ac-line);
+  min-width: 0;
+  padding: 14px 8px 6px 0;
   background: #ffffff;
 }
 
 .ac-episode-label {
-  margin: 0 0 var(--ac-text-space-sm);
-  color: var(--ac-accent-muted);
+  margin: 0 0 10px;
+  color: var(--ac-accent-strong);
   font-size: var(--ac-text-caption);
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .ac-episode-title {
   margin: 0;
-  font-size: clamp(1.25rem, 1.9vw, var(--ac-text-heading-2));
+  font-size: clamp(1.7rem, 2.25vw, 2.1rem);
   line-height: var(--ac-leading-tight);
+  letter-spacing: -0.02em;
 }
 
 .ac-episode-description {
   display: -webkit-box;
-  margin: var(--ac-text-space-md) 0 0;
+  margin: 14px 0 0;
   overflow: hidden;
   color: var(--ac-muted);
-  font-size: var(--ac-text-secondary);
+  font-size: 0.95rem;
   line-height: var(--ac-leading-body);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .ac-episode-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin: 20px 0 0;
-  padding: 18px 0 0;
-  border-top: 1px solid var(--ac-line);
-}
-
-.ac-episode-meta dt {
-  color: var(--ac-muted);
-  font-size: var(--ac-text-caption);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.ac-episode-meta dd {
-  margin: 4px 0 0;
-  color: var(--ac-ink);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 22px 0 0;
+  padding: 0;
+  color: #4d4e54;
   font-size: var(--ac-text-secondary);
   font-weight: 700;
 }
 
+.ac-episode-meta-item {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ac-episode-meta-item + .ac-episode-meta-item::before {
+  margin-right: 4px;
+  color: var(--ac-ink);
+  content: "•";
+}
+
+.ac-episode-meta-item:first-child span {
+  font-variant-numeric: tabular-nums;
+}
+
+.ac-episode-meta-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
 .ac-sobriety {
-  margin: 24px 0 0;
-  padding: 18px;
+  margin: 0;
+  min-height: 382px;
+  padding: 20px;
   border: 1px solid var(--ac-line);
-  border-radius: 12px;
-  background: var(--ac-surface);
+  border-radius: var(--ac-radius-lg);
+  background: #ffffff;
 }
 
 .ac-sobriety h3,
@@ -225,7 +248,7 @@ body {
 }
 
 .ac-sobriety-comparison {
-  margin: 12px 0 0;
+  margin: 16px 0 0;
 }
 
 .ac-sobriety-comparison div {
@@ -252,16 +275,10 @@ body {
 }
 
 .ac-sobriety-note {
-  margin-top: 8px !important;
+  margin-top: 14px !important;
   color: var(--ac-muted);
   font-size: var(--ac-text-caption);
   line-height: var(--ac-leading-caption);
-}
-
-.ac-panel {
-  display: flex;
-  flex-direction: column;
-  padding: clamp(24px, 4vw, 38px);
 }
 
 .ac-kicker {
@@ -273,47 +290,9 @@ body {
   text-transform: uppercase;
 }
 
-.ac-title {
-  margin: 0;
-  font-size: clamp(1.75rem, 2.35vw, var(--ac-text-heading-1));
-  line-height: var(--ac-leading-tight);
-  letter-spacing: 0;
-}
-
-.ac-intro,
-.ac-panel-text,
 .ac-future-note {
   color: var(--ac-muted);
   line-height: var(--ac-leading-body);
-}
-
-.ac-intro {
-  margin: var(--ac-text-space-md) 0 0;
-  font-size: var(--ac-text-body);
-}
-
-.ac-panel-header {
-  margin-bottom: var(--ac-text-space-lg);
-}
-
-.ac-section-label {
-  margin: 0 0 var(--ac-text-space-sm);
-  color: var(--ac-accent-muted);
-  font-size: var(--ac-text-caption);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.ac-panel-title {
-  margin: 0;
-  font-size: clamp(1.3rem, 2.05vw, var(--ac-text-heading-2));
-  line-height: var(--ac-leading-tight);
-}
-
-.ac-panel-text {
-  margin: var(--ac-text-space-md) 0 0;
-  font-size: var(--ac-text-secondary);
 }
 
 .ac-controls {
@@ -321,15 +300,20 @@ body {
   grid-template-columns: auto minmax(0, 1fr) 150px;
   gap: 18px;
   align-items: center;
-  padding: 18px 20px;
+  min-height: 94px;
+  padding: 14px 16px;
   border-radius: var(--ac-radius-md);
   background: var(--ac-surface);
   border: 1px solid var(--ac-line);
 }
 
+.ac-episode-meta + #ac-audio + .ac-controls {
+  margin-top: 20px;
+}
+
 .ac-play {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   display: grid;
   place-items: center;
   border: 0;
@@ -395,9 +379,70 @@ body {
   font-size: var(--ac-text-caption);
 }
 
+.ac-subtitle-window {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 8px 14px;
+  border: 1px solid var(--ac-line);
+  border-radius: var(--ac-radius-md);
+  background: var(--ac-surface);
+}
+
+.ac-subtitle-window::before {
+  color: var(--ac-accent-strong);
+  content: "“";
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ac-subtitle-window[hidden] {
+  display: none;
+}
+
+.ac-contextual-cue {
+  width: 100%;
+  padding: 4px 14px;
+  border: 0;
+  border-left: 0;
+  border-radius: 0;
+  color: #4d4e54;
+  background: transparent;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: var(--ac-leading-body);
+  text-align: left;
+  white-space: pre-line;
+  cursor: pointer;
+}
+
+.ac-contextual-cue:hover,
+.ac-contextual-cue:focus-visible {
+  color: var(--ac-ink);
+  background: transparent;
+}
+
+.ac-contextual-cue:focus-visible {
+  outline: 3px solid var(--ac-focus-ring);
+  outline-offset: 2px;
+}
+
 .ac-chapters {
-  margin-top: 22px;
-  border-block: 1px solid var(--ac-line);
+  position: sticky;
+  top: 24px;
+  min-height: 382px;
+  max-height: calc(100vh - 48px);
+  margin: 0;
+  padding: 20px;
+  overflow: auto;
+  border: 1px solid var(--ac-line);
+  border-radius: var(--ac-radius-lg);
+  background: #ffffff;
 }
 
 .ac-chapters[hidden] {
@@ -406,7 +451,7 @@ body {
 
 .ac-chapters-title {
   margin: 0;
-  padding: 14px 2px 10px;
+  padding: 0 0 12px;
   color: var(--ac-ink);
   font-size: var(--ac-text-secondary);
   line-height: var(--ac-leading-caption);
@@ -419,7 +464,7 @@ body {
 
 .ac-chapters-list {
   margin: 0;
-  padding: 0 0 8px;
+  padding: 0;
   list-style: none;
 }
 
@@ -476,7 +521,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
-  margin: 30px 0 26px;
+  margin: 18px 0 12px;
 }
 
 .ac-loaders[hidden],
@@ -493,7 +538,7 @@ body {
   position: relative;
   display: grid;
   min-width: 0;
-  min-height: 180px;
+  min-height: 138px;
   place-items: center;
   padding: 20px 16px;
   overflow: hidden;
@@ -618,7 +663,7 @@ body {
   display: flex;
   gap: 7px;
   align-items: center;
-  margin: 18px 0 22px;
+  margin: 18px 0 0;
   color: var(--ac-muted);
   font-size: var(--ac-text-secondary);
 }
@@ -654,6 +699,21 @@ body {
   display: grid;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.ac-consultation {
+  display: grid;
+  grid-template-columns: minmax(0, 0.415fr) minmax(0, 1fr) minmax(0, 0.47fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.ac-transcript-panel {
+  min-height: 382px;
+  padding: 20px 20px 0;
+  border: 1px solid var(--ac-line);
+  border-radius: var(--ac-radius-lg);
+  background: #ffffff;
 }
 
 .ac-search-row {
@@ -733,9 +793,9 @@ body {
 }
 
 .ac-transcript {
-  max-height: 360px;
+  max-height: 176px;
   overflow: auto;
-  padding: 20px clamp(18px, 3vw, 28px);
+  padding: 14px 40px;
   border-radius: var(--ac-radius-md);
   background: #ffffff;
   border: 1px solid var(--ac-line);
@@ -745,14 +805,14 @@ body {
 .ac-cue {
   width: 100%;
   margin: 0;
-  padding: 10px 18px;
+  padding: 4px 0;
   border: 0;
   border-left: 3px solid transparent;
   border-radius: 0 12px 12px 0;
   color: var(--ac-muted);
   background: transparent;
   font: inherit;
-  font-size: var(--ac-text-body);
+  font-size: 0.95rem;
   line-height: var(--ac-leading-relaxed);
   text-align: left;
   cursor: pointer;
@@ -854,12 +914,29 @@ body {
 
   .ac-player,
   .ac-controls,
-  .ac-loaders {
+  .ac-loaders,
+  .ac-episode-card,
+  .ac-consultation {
     grid-template-columns: 1fr;
   }
 
-  .ac-panel {
-    order: -1;
+  .ac-episode-details {
+    border-top: 0;
+  }
+
+  .ac-episode-summary {
+    border: 0;
+  }
+
+  .ac-chapters {
+    position: static;
+    max-height: none;
+  }
+
+  .ac-chapters,
+  .ac-transcript-panel,
+  .ac-sobriety {
+    min-height: 0;
   }
 
   .ac-loaders {
