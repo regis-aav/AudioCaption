@@ -380,9 +380,9 @@ body {
 }
 
 .ac-subtitle-window {
+  position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   height: 72px;
   min-height: 72px;
@@ -396,6 +396,10 @@ body {
 }
 
 .ac-subtitle-window::before {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
   color: var(--ac-accent-strong);
   content: "“";
   font-size: 2rem;
@@ -412,7 +416,7 @@ body {
   width: 100%;
   min-width: 0;
   max-height: calc(2 * 1.6em);
-  padding: 0 14px;
+  padding: 0 40px;
   overflow: hidden;
   border: 0;
   border-left: 0;
@@ -423,7 +427,7 @@ body {
   font-size: 1rem;
   font-weight: 600;
   line-height: var(--ac-leading-body);
-  text-align: left;
+  text-align: center;
   overflow-wrap: anywhere;
   white-space: pre-line;
   -webkit-box-orient: vertical;
