@@ -20,6 +20,11 @@ const chaptersCount = document.querySelector("#ac-chapters-count");
 const chaptersList = document.querySelector("#ac-chapters-list");
 const episodeTitle = document.querySelector("#ac-episode-title");
 const episodeDuration = document.querySelector("#ac-episode-duration");
+const episodeSeries = document.querySelector('[data-episode-field="series"]');
+const episodeNumber = document.querySelector('[data-episode-field="episodeNumber"]');
+const episodeNumberWrap = document.querySelector("[data-episode-number]");
+const episodeDescription = document.querySelector('[data-episode-field="description"]');
+const episodeAuthor = document.querySelector('[data-episode-field="author"]');
 const sobrietyActualSize = document.querySelector("#ac-sobriety-actual-size");
 const sobrietyVideoSize = document.querySelector("#ac-sobriety-video-size");
 const sobrietySavings = document.querySelector("#ac-sobriety-savings");
@@ -29,6 +34,32 @@ const subtitleInput = document.querySelector("#ac-subtitle-input");
 const loaders = document.querySelector(".ac-loaders");
 const importsReady = document.querySelector("#ac-imports-ready");
 const importsEditButton = document.querySelector("#ac-imports-edit");
+const publicationEditButton = document.querySelector("#ac-publication-edit");
+const publicationDialog = document.querySelector("#ac-publication-dialog");
+const publicationCloseButton = document.querySelector("#ac-publication-close");
+const publicationCancelButton = document.querySelector("#ac-publication-cancel");
+const publicationSaveButton = document.querySelector("#ac-publication-save");
+const publicationCoverButton = document.querySelector("#ac-publication-cover-change");
+const publicationStatus = document.querySelector("#ac-publication-status");
+const publicationFields = {
+  series: document.querySelector("#ac-publication-series"),
+  episodeNumber: document.querySelector("#ac-publication-number"),
+  title: document.querySelector("#ac-publication-episode-title"),
+  author: document.querySelector("#ac-publication-author"),
+  description: document.querySelector("#ac-publication-description"),
+};
+const publicationFieldErrors = {
+  series: document.querySelector("#ac-publication-series-error"),
+  title: document.querySelector("#ac-publication-title-error"),
+};
+const publicationPreview = {
+  cover: document.querySelector("#ac-publication-preview-cover"),
+  series: document.querySelector("#ac-publication-preview-series"),
+  episodeNumber: document.querySelector("#ac-publication-preview-number"),
+  episodeNumberWrap: document.querySelector("#ac-publication-preview-number-wrap"),
+  title: document.querySelector("#ac-publication-preview-episode-title"),
+  author: document.querySelector("#ac-publication-preview-author"),
+};
 const importCards = Object.fromEntries(
   Array.from(document.querySelectorAll("[data-import-card]"), (card) => [card.dataset.importCard, card])
 );
@@ -45,9 +76,22 @@ let pendingImageImportFile = null;
 let pendingAudioImportFile = null;
 let areImportCardsExpanded = true;
 let audioChapterImportVersion = 0;
+let publicationDraft = null;
+const defaultEpisodeMetadata = Object.freeze({
+  series: "",
+  episodeNumber: "",
+  title: "Titre de l’épisode",
+  author: "",
+  description: "Une courte présentation de cet épisode sera bientôt disponible.",
+  language: "fr",
+});
+const embeddedEpisode = readEmbeddedEpisode();
 let episode = {
+  ...embeddedEpisode,
+  metadata: normalizeEpisodeMetadata(embeddedEpisode.metadata),
   navigation: {
-    chapters: [],
+    ...embeddedEpisode.navigation,
+    chapters: Array.isArray(embeddedEpisode.navigation?.chapters) ? embeddedEpisode.navigation.chapters : [],
   },
 };
 const { createChapterEngine, importAudioChapters } = globalThis.AudioCaption;
@@ -60,6 +104,35 @@ const loadedFileSizes = {
 };
 
 const fullHdVideoBitrate = 5_000_000;
+
+function readEmbeddedEpisode() {
+  const dataElement = document.querySelector("#ac-episode-data");
+
+  if (!dataElement) {
+    return {};
+  }
+
+  try {
+    const data = JSON.parse(dataElement.textContent);
+    return data && typeof data === "object" ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function normalizeEpisodeMetadata(metadata = {}) {
+  const source = metadata && typeof metadata === "object" ? metadata : {};
+
+  return {
+    ...source,
+    ...Object.fromEntries(
+      Object.entries(defaultEpisodeMetadata).map(([key, fallback]) => [
+        key,
+        typeof source[key] === "string" ? source[key] : fallback,
+      ])
+    ),
+  };
+}
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) {
@@ -408,6 +481,120 @@ function getEpisodeTitle(file) {
   return file.name.replace(/\.[^/.]+$/, "") || "Titre de l’épisode";
 }
 
+function renderEpisodeMetadata() {
+  const metadata = normalizeEpisodeMetadata(episode.metadata);
+  const hasEpisodeNumber = Boolean(metadata.episodeNumber.trim());
+
+  episodeSeries.textContent = metadata.series.trim() || "Épisode";
+  episodeNumber.textContent = metadata.episodeNumber;
+  episodeNumberWrap.hidden = !hasEpisodeNumber;
+  episodeTitle.textContent = metadata.title;
+  episodeDescription.textContent = metadata.description;
+  episodeDescription.hidden = !metadata.description.trim();
+  episodeAuthor.textContent = metadata.author.trim() || "À venir";
+}
+
+function syncPublicationPreviewCover() {
+  const source = cover.getAttribute("src");
+
+  if (source) {
+    publicationPreview.cover.src = source;
+  } else {
+    publicationPreview.cover.removeAttribute("src");
+  }
+}
+
+function renderPublicationPreview() {
+  if (!publicationDraft) {
+    return;
+  }
+
+  const hasEpisodeNumber = Boolean(publicationDraft.episodeNumber.trim());
+  publicationPreview.series.textContent = publicationDraft.series.trim() || "Épisode";
+  publicationPreview.episodeNumber.textContent = publicationDraft.episodeNumber;
+  publicationPreview.episodeNumberWrap.hidden = !hasEpisodeNumber;
+  publicationPreview.title.textContent = publicationDraft.title.trim() || "Titre de l’épisode";
+  publicationPreview.author.textContent = publicationDraft.author.trim() || "À venir";
+}
+
+function clearPublicationValidation() {
+  publicationStatus.textContent = "";
+
+  for (const [name, error] of Object.entries(publicationFieldErrors)) {
+    error.textContent = "";
+    publicationFields[name].removeAttribute("aria-invalid");
+  }
+}
+
+function openPublicationDialog() {
+  publicationDraft = { ...normalizeEpisodeMetadata(episode.metadata) };
+
+  for (const [name, field] of Object.entries(publicationFields)) {
+    field.value = publicationDraft[name];
+  }
+
+  clearPublicationValidation();
+  renderPublicationPreview();
+  syncPublicationPreviewCover();
+  publicationDialog.showModal();
+  publicationFields.title.focus();
+  publicationFields.title.select();
+}
+
+function closePublicationDialog() {
+  publicationDraft = null;
+  clearPublicationValidation();
+  publicationDialog.close();
+}
+
+function validatePublicationDraft() {
+  const requiredFields = {
+    series: "La série est obligatoire.",
+    title: "Le titre est obligatoire.",
+  };
+  let firstInvalidField = null;
+
+  clearPublicationValidation();
+
+  for (const [name, message] of Object.entries(requiredFields)) {
+    if (publicationDraft[name].trim()) {
+      continue;
+    }
+
+    publicationFields[name].setAttribute("aria-invalid", "true");
+    publicationFieldErrors[name].textContent = message;
+    firstInvalidField ??= publicationFields[name];
+  }
+
+  if (firstInvalidField) {
+    publicationStatus.textContent = "Complétez les informations obligatoires.";
+    firstInvalidField.focus();
+    return false;
+  }
+
+  return true;
+}
+
+function savePublicationMetadata() {
+  if (!publicationDraft || !validatePublicationDraft()) {
+    return;
+  }
+
+  const savedMetadata = Object.fromEntries(
+    Object.keys(publicationFields).map((name) => [name, publicationDraft[name].trim()])
+  );
+
+  episode = {
+    ...episode,
+    metadata: {
+      ...episode.metadata,
+      ...savedMetadata,
+    },
+  };
+  renderEpisodeMetadata();
+  closePublicationDialog();
+}
+
 function formatFileSize(bytes) {
   if (!Number.isFinite(bytes) || bytes < 0) {
     return "—";
@@ -430,7 +617,13 @@ function updateImportsVisibility({ collapseWhenReady = false } = {}) {
   }
 
   loaders.hidden = isEpisodeReady && !areImportCardsExpanded;
-  importsReady.hidden = !isEpisodeReady || areImportCardsExpanded;
+  importsReady.hidden = !isEpisodeReady;
+  importsEditButton.setAttribute("aria-expanded", String(!loaders.hidden));
+}
+
+function closeMediaPanel() {
+  areImportCardsExpanded = false;
+  updateImportsVisibility();
 }
 
 function resetImportCard(type) {
@@ -460,7 +653,7 @@ function updateImportCard(type, file) {
   card.querySelector(".ac-file-default").hidden = true;
   card.querySelector(".ac-file-success").hidden = false;
   card.classList.add("is-loaded");
-  updateImportsVisibility({ collapseWhenReady: true });
+  closeMediaPanel();
 }
 
 function updateSobrietyIndicator() {
@@ -526,7 +719,14 @@ function loadAudioFile(file) {
   resetImportCard("audio");
   setControlsEnabled(false);
   isSeeking = false;
-  episodeTitle.textContent = getEpisodeTitle(file);
+  episode = {
+    ...episode,
+    metadata: {
+      ...episode.metadata,
+      title: getEpisodeTitle(file),
+    },
+  };
+  renderEpisodeMetadata();
   episodeDuration.textContent = "--:--";
   loadedFileSizes.audio = file.size;
   loadedAudioDuration = Number.NaN;
@@ -613,10 +813,42 @@ subtitleInput.addEventListener("change", async () => {
 });
 
 importsEditButton.addEventListener("click", () => {
-  areImportCardsExpanded = true;
+  areImportCardsExpanded = !areImportCardsExpanded;
   updateImportsVisibility();
-  imageInput.focus();
+
+  if (areImportCardsExpanded) {
+    imageInput.focus();
+  }
 });
+
+publicationEditButton.addEventListener("click", openPublicationDialog);
+publicationCloseButton.addEventListener("click", closePublicationDialog);
+publicationCancelButton.addEventListener("click", closePublicationDialog);
+publicationSaveButton.addEventListener("click", savePublicationMetadata);
+publicationCoverButton.addEventListener("click", () => imageInput.click());
+
+publicationDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closePublicationDialog();
+});
+
+for (const [name, field] of Object.entries(publicationFields)) {
+  field.addEventListener("input", () => {
+    if (!publicationDraft) {
+      return;
+    }
+
+    publicationDraft[name] = field.value;
+
+    if (publicationFieldErrors[name]) {
+      publicationFieldErrors[name].textContent = "";
+      field.removeAttribute("aria-invalid");
+    }
+
+    publicationStatus.textContent = "";
+    renderPublicationPreview();
+  });
+}
 
 transcriptSearch.addEventListener("input", () => {
   transcriptSearchQuery = transcriptSearch.value.trim().toLocaleLowerCase();
@@ -707,12 +939,15 @@ volume.addEventListener("input", () => {
 });
 
 cover.addEventListener("load", () => {
+  syncPublicationPreviewCover();
+
   if (pendingImageImportFile) {
     updateImportCard("image", pendingImageImportFile);
     pendingImageImportFile = null;
   }
 });
 cover.addEventListener("error", () => {
+  publicationPreview.cover.removeAttribute("src");
   pendingImageImportFile = null;
   resetImportCard("image");
 });
@@ -752,4 +987,5 @@ audio.addEventListener("timeupdate", () => {
 
 updatePlayState();
 updateProgress();
-updateImportsVisibility();
+updateImportsVisibility({ collapseWhenReady: true });
+renderEpisodeMetadata();

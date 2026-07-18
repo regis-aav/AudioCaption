@@ -41,6 +41,8 @@ function buildIndexHtml(publication) {
   const { metadata, paths } = publication;
   const title = escapeHtml(metadata.title);
   const language = escapeHtml(metadata.language);
+  const series = escapeHtml(metadata.series);
+  const episodeNumber = metadata.episodeNumber ? ` · ${escapeHtml(metadata.episodeNumber)}` : "";
   const descriptionMeta = metadata.description
     ? `\n    <meta name="description" content="${escapeHtml(metadata.description)}">`
     : "";
@@ -60,6 +62,7 @@ function buildIndexHtml(publication) {
     <main class="ac-page">
       <article class="ac-episode" data-episode-id="${escapeHtml(metadata.episodeId)}">
         <header class="ac-episode-header">
+          <p class="ac-episode-series">${series}${episodeNumber}</p>
           <h1>${title}</h1>
 ${description}${author}        </header>
 

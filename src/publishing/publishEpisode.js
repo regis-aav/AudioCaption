@@ -136,6 +136,8 @@ export function validateEpisode(episode) {
   if (!isPlainObject(episode.metadata)) {
     issues.push("metadata est obligatoire.");
   } else {
+    validateRequiredString(episode.metadata.series, "metadata.series", issues);
+    validateOptionalString(episode.metadata.episodeNumber, "metadata.episodeNumber", issues);
     validateRequiredString(episode.metadata.title, "metadata.title", issues);
     validateOptionalString(episode.metadata.description, "metadata.description", issues);
     validateOptionalString(episode.metadata.author, "metadata.author", issues);
@@ -231,6 +233,8 @@ function createMetadata(episode) {
   return compactObject([
     ["episodeId", episode.id],
     ["modelVersion", episode.modelVersion],
+    ["series", episode.metadata.series.trim()],
+    ["episodeNumber", episode.metadata.episodeNumber],
     ["title", episode.metadata.title.trim()],
     ["description", episode.metadata.description],
     ["author", episode.metadata.author],
