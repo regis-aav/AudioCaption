@@ -267,7 +267,9 @@ function updateSearchResults() {
   searchCounter.textContent = `${Math.max(0, activeResultNumber)} / ${resultCount}`;
   searchPreviousButton.disabled = resultCount === 0;
   searchNextButton.disabled = resultCount === 0;
-  searchResults.textContent = `${Math.max(0, activeResultNumber)} / ${resultCount} résultat${resultCount > 1 ? "s" : ""} trouvé${resultCount > 1 ? "s" : ""}.`;
+  searchResults.textContent = resultCount === 0
+    ? "Aucun résultat."
+    : `${Math.max(0, activeResultNumber)} / ${resultCount} résultat${resultCount > 1 ? "s" : ""} trouvé${resultCount > 1 ? "s" : ""}.`;
 }
 
 function renderTranscript() {
@@ -872,6 +874,8 @@ function navigateSearchResults(direction) {
 
   const cueIndex = resultIndexes[activeSearchResultIndex];
   audio.currentTime = cues[cueIndex].start;
+  syncTranscript();
+  setActiveCue(cueIndex);
   renderTranscript();
   updateSearchResults();
 
