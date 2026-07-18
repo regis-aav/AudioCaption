@@ -384,9 +384,12 @@ body {
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
   align-items: center;
-  min-height: 48px;
+  height: 72px;
+  min-height: 72px;
+  max-height: 72px;
   margin-top: 16px;
   padding: 8px 14px;
+  overflow: hidden;
   border: 1px solid var(--ac-line);
   border-radius: var(--ac-radius-md);
   background: var(--ac-surface);
@@ -401,12 +404,16 @@ body {
 }
 
 .ac-subtitle-window[hidden] {
-  display: none;
+  display: grid;
 }
 
 .ac-contextual-cue {
+  display: -webkit-box;
   width: 100%;
-  padding: 4px 14px;
+  min-width: 0;
+  max-height: calc(2 * 1.6em);
+  padding: 0 14px;
+  overflow: hidden;
   border: 0;
   border-left: 0;
   border-radius: 0;
@@ -417,7 +424,10 @@ body {
   font-weight: 600;
   line-height: var(--ac-leading-body);
   text-align: left;
+  overflow-wrap: anywhere;
   white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   cursor: pointer;
 }
 
