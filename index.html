@@ -153,25 +153,6 @@
             <ol class="ac-chapters-list" id="ac-chapters-list"></ol>
           </nav>
 
-          <div class="ac-transcript-panel">
-            <div class="ac-transcript-search">
-              <div class="ac-search-row">
-                <label class="ac-search-label" for="ac-transcript-search">
-                  <span>Rechercher dans la transcription</span>
-                  <input id="ac-transcript-search" type="search" placeholder="Mot ou expression" aria-controls="ac-transcript" aria-describedby="ac-search-results">
-                </label>
-                <div class="ac-search-navigation" role="group" aria-label="Navigation dans les résultats">
-                  <span class="ac-search-counter" id="ac-search-counter" aria-hidden="true">0 / 0</span>
-                  <button class="ac-search-button" id="ac-search-previous" type="button" aria-label="Résultat précédent" disabled>Précédent</button>
-                  <button class="ac-search-button" id="ac-search-next" type="button" aria-label="Résultat suivant" disabled>Suivant</button>
-                </div>
-              </div>
-              <p class="ac-search-results" id="ac-search-results" role="status" aria-live="polite">Aucune transcription chargée.</p>
-            </div>
-
-            <div class="ac-transcript" id="ac-transcript" aria-label="Transcription synchronisée"></div>
-          </div>
-
           <section class="ac-sobriety" aria-labelledby="ac-sobriety-title">
             <h3 id="ac-sobriety-title">🌱 Pourquoi AudioCaption ?</h3>
             <p>Parce que tous les contenus audio n'ont pas besoin d'une vidéo pour proposer une transcription synchronisée.</p>
@@ -192,6 +173,15 @@
             <p class="ac-sobriety-note">Une image, un fichier audio et une transcription synchronisée suffisent pour offrir une expérience de lecture et d'écoute complète, tout en réduisant jusqu'à 95 % le volume de données par rapport à une vidéo équivalente.</p>
           </section>
         </section>
+
+        <div hidden aria-hidden="true">
+          <input id="ac-transcript-search" type="search">
+          <span id="ac-search-counter"></span>
+          <button id="ac-search-previous" type="button" disabled></button>
+          <button id="ac-search-next" type="button" disabled></button>
+          <p id="ac-search-results"></p>
+          <div id="ac-transcript"></div>
+        </div>
       </section>
     </main>
 
