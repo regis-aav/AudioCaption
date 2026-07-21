@@ -48,11 +48,17 @@ const publicationFields = {
   author: document.querySelector("#ac-publication-author"),
   description: document.querySelector("#ac-publication-description"),
 };
+const publicationTypographyFields = {
+  heading: document.querySelector("#ac-publication-heading-font"),
+  body: document.querySelector("#ac-publication-body-font"),
+};
+const publicationFontMatch = document.querySelector("#ac-publication-font-match");
 const publicationFieldErrors = {
   series: document.querySelector("#ac-publication-series-error"),
   title: document.querySelector("#ac-publication-title-error"),
 };
 const publicationPreview = {
+  card: document.querySelector(".ac-publication-preview-card"),
   cover: document.querySelector("#ac-publication-preview-cover"),
   series: document.querySelector("#ac-publication-preview-series"),
   episodeNumber: document.querySelector("#ac-publication-preview-number"),
@@ -85,16 +91,23 @@ const defaultEpisodeMetadata = Object.freeze({
   description: "Une courte présentation de cet épisode sera bientôt disponible.",
   language: "fr",
 });
+const {
+  createChapterEngine,
+  getFontOptions,
+  importAudioChapters,
+  normalizeTypography,
+  resolveFontStack,
+} = globalThis.AudioCaption;
 const embeddedEpisode = readEmbeddedEpisode();
 let episode = {
   ...embeddedEpisode,
   metadata: normalizeEpisodeMetadata(embeddedEpisode.metadata),
+  presentation: normalizeEpisodePresentation(embeddedEpisode.presentation),
   navigation: {
     ...embeddedEpisode.navigation,
     chapters: Array.isArray(embeddedEpisode.navigation?.chapters) ? embeddedEpisode.navigation.chapters : [],
   },
 };
-const { createChapterEngine, importAudioChapters } = globalThis.AudioCaption;
 let chapterEngine = createChapterEngine(episode.navigation.chapters);
 
 const loadedFileSizes = {
@@ -132,6 +145,41 @@ function normalizeEpisodeMetadata(metadata = {}) {
       ])
     ),
   };
+}
+
+function normalizeEpisodePresentation(presentation = {}) {
+  const source = presentation && typeof presentation === "object" && !Array.isArray(presentation)
+    ? presentation
+    : {};
+
+  return {
+    ...source,
+    theme: typeof source.theme === "string" && source.theme.trim()
+      ? source.theme
+      : "audio-caption",
+    typography: normalizeTypography(source.typography),
+  };
+}
+
+function applyTypography(element, typography) {
+  const normalized = normalizeTypography(typography);
+  element.style.setProperty("--ac-font-heading", resolveFontStack(normalized.heading));
+  element.style.setProperty("--ac-font-body", resolveFontStack(normalized.body));
+}
+
+function renderEpisodeTypography() {
+  applyTypography(player, episode.presentation.typography);
+}
+
+function initializeTypographyFields() {
+  for (const field of Object.values(publicationTypographyFields)) {
+    for (const { id, label } of getFontOptions()) {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = label;
+      field.append(option);
+    }
+  }
 }
 
 function formatTime(seconds) {
@@ -246,15 +294,21 @@ function renderCueText(button, text) {
 function updateSearchResults() {
   if (!cues.length) {
     searchResults.textContent = "Aucune transcription chargée.";
-    searchCounter.textContent = "0 / 0";
+    searchResults.hidden = false;
+    searchCounter.hidden = true;
+    searchPreviousButton.hidden = true;
+    searchNextButton.hidden = true;
     searchPreviousButton.disabled = true;
     searchNextButton.disabled = true;
     return;
   }
 
   if (!transcriptSearchQuery) {
-    searchResults.textContent = `${cues.length} passages dans la transcription.`;
-    searchCounter.textContent = "0 / 0";
+    searchResults.textContent = "";
+    searchResults.hidden = true;
+    searchCounter.hidden = true;
+    searchPreviousButton.hidden = true;
+    searchNextButton.hidden = true;
     searchPreviousButton.disabled = true;
     searchNextButton.disabled = true;
     return;
@@ -264,12 +318,14 @@ function updateSearchResults() {
   const resultCount = resultIndexes.length;
   const activeResultNumber = activeSearchResultIndex + 1;
 
-  searchCounter.textContent = `${Math.max(0, activeResultNumber)} / ${resultCount}`;
+  searchCounter.hidden = resultCount === 0;
+  searchCounter.textContent = resultCount === 0 ? "" : `${activeResultNumber} / ${resultCount}`;
+  searchPreviousButton.hidden = resultCount === 0;
+  searchNextButton.hidden = resultCount === 0;
   searchPreviousButton.disabled = resultCount === 0;
   searchNextButton.disabled = resultCount === 0;
-  searchResults.textContent = resultCount === 0
-    ? "Aucun résultat."
-    : `${Math.max(0, activeResultNumber)} / ${resultCount} résultat${resultCount > 1 ? "s" : ""} trouvé${resultCount > 1 ? "s" : ""}.`;
+  searchResults.hidden = resultCount > 0;
+  searchResults.textContent = resultCount === 0 ? "Aucun résultat" : "";
 }
 
 function renderTranscript() {
@@ -517,6 +573,7 @@ function renderPublicationPreview() {
   publicationPreview.episodeNumberWrap.hidden = !hasEpisodeNumber;
   publicationPreview.title.textContent = publicationDraft.title.trim() || "Titre de l’épisode";
   publicationPreview.author.textContent = publicationDraft.author.trim() || "À venir";
+  applyTypography(publicationPreview.card, publicationDraft.typography);
 }
 
 function clearPublicationValidation() {
@@ -529,11 +586,21 @@ function clearPublicationValidation() {
 }
 
 function openPublicationDialog() {
-  publicationDraft = { ...normalizeEpisodeMetadata(episode.metadata) };
+  publicationDraft = {
+    ...normalizeEpisodeMetadata(episode.metadata),
+    typography: normalizeTypography(episode.presentation.typography),
+  };
 
   for (const [name, field] of Object.entries(publicationFields)) {
     field.value = publicationDraft[name];
   }
+
+  for (const [name, field] of Object.entries(publicationTypographyFields)) {
+    field.value = publicationDraft.typography[name];
+  }
+
+  publicationFontMatch.checked = publicationDraft.typography.heading === publicationDraft.typography.body;
+  publicationTypographyFields.body.disabled = publicationFontMatch.checked;
 
   clearPublicationValidation();
   renderPublicationPreview();
@@ -545,6 +612,8 @@ function openPublicationDialog() {
 
 function closePublicationDialog() {
   publicationDraft = null;
+  publicationPreview.card.style.removeProperty("--ac-font-heading");
+  publicationPreview.card.style.removeProperty("--ac-font-body");
   clearPublicationValidation();
   publicationDialog.close();
 }
@@ -592,8 +661,13 @@ function savePublicationMetadata() {
       ...episode.metadata,
       ...savedMetadata,
     },
+    presentation: {
+      ...episode.presentation,
+      typography: normalizeTypography(publicationDraft.typography),
+    },
   };
   renderEpisodeMetadata();
+  renderEpisodeTypography();
   closePublicationDialog();
 }
 
@@ -745,9 +819,14 @@ async function loadSubtitleFile(file) {
   cues = parseSubtitles(await file.text());
   activeCueIndex = -1;
   activeSearchResultIndex = -1;
-  renderTranscript();
-  updateSearchResults();
-  syncTranscript();
+
+  if (getSearchResultIndexes().length) {
+    selectSearchResult(0, false);
+  } else {
+    renderTranscript();
+    updateSearchResults();
+    syncTranscript();
+  }
 
   if (cues.length) {
     updateImportCard("subtitles", file);
@@ -852,25 +931,60 @@ for (const [name, field] of Object.entries(publicationFields)) {
   });
 }
 
+for (const [name, field] of Object.entries(publicationTypographyFields)) {
+  field.addEventListener("change", () => {
+    if (!publicationDraft) {
+      return;
+    }
+
+    publicationDraft.typography[name] = field.value;
+
+    if (name === "heading" && publicationFontMatch.checked) {
+      publicationDraft.typography.body = field.value;
+      publicationTypographyFields.body.value = field.value;
+    }
+
+    renderPublicationPreview();
+  });
+}
+
+publicationFontMatch.addEventListener("change", () => {
+  if (!publicationDraft) {
+    return;
+  }
+
+  publicationTypographyFields.body.disabled = publicationFontMatch.checked;
+
+  if (publicationFontMatch.checked) {
+    publicationDraft.typography.body = publicationDraft.typography.heading;
+    publicationTypographyFields.body.value = publicationDraft.typography.heading;
+  }
+
+  renderPublicationPreview();
+});
+
 transcriptSearch.addEventListener("input", () => {
   transcriptSearchQuery = transcriptSearch.value.trim().toLocaleLowerCase();
+  const resultIndexes = getSearchResultIndexes();
+
+  if (resultIndexes.length) {
+    selectSearchResult(0, false);
+    return;
+  }
+
   activeSearchResultIndex = -1;
   renderTranscript();
   updateSearchResults();
 });
 
-function navigateSearchResults(direction) {
+function selectSearchResult(resultIndex, shouldScroll = true) {
   const resultIndexes = getSearchResultIndexes();
 
   if (!resultIndexes.length) {
     return;
   }
 
-  if (activeSearchResultIndex === -1) {
-    activeSearchResultIndex = direction > 0 ? 0 : resultIndexes.length - 1;
-  } else {
-    activeSearchResultIndex = (activeSearchResultIndex + direction + resultIndexes.length) % resultIndexes.length;
-  }
+  activeSearchResultIndex = (resultIndex + resultIndexes.length) % resultIndexes.length;
 
   const cueIndex = resultIndexes[activeSearchResultIndex];
   audio.currentTime = cues[cueIndex].start;
@@ -879,7 +993,23 @@ function navigateSearchResults(direction) {
   renderTranscript();
   updateSearchResults();
 
-  transcript.querySelectorAll(".ac-cue")[cueIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+  if (shouldScroll) {
+    transcript.querySelectorAll(".ac-cue")[cueIndex].scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+function navigateSearchResults(direction) {
+  const resultIndexes = getSearchResultIndexes();
+
+  if (!resultIndexes.length) {
+    return;
+  }
+
+  const nextResultIndex = activeSearchResultIndex === -1
+    ? direction > 0 ? 0 : resultIndexes.length - 1
+    : activeSearchResultIndex + direction;
+
+  selectSearchResult(nextResultIndex);
 }
 
 searchPreviousButton.addEventListener("click", () => {
@@ -992,4 +1122,6 @@ audio.addEventListener("timeupdate", () => {
 updatePlayState();
 updateProgress();
 updateImportsVisibility({ collapseWhenReady: true });
+initializeTypographyFields();
 renderEpisodeMetadata();
+renderEpisodeTypography();

@@ -71,8 +71,9 @@ Episode
     theme
     accentColor
     accentStrongColor
-    bodyFont
-    headingFont
+    typography
+      heading
+      body
 
   accessibility
     transcriptLanguage
@@ -182,8 +183,11 @@ La marque décrit une identité. Elle ne contient pas de dimensions, de position
 | `theme` | Choisir un ensemble cohérent de valeurs visuelles. | Identifiant de thème | Obligatoire | Thème AudioCaption par défaut | Identifiant connu ou thème personnalisé valide. |
 | `accentColor` | Définir la couleur d’action principale. | Couleur CSS normalisée | Optionnelle | Valeur du thème | Format de couleur autorisé et contraste validé dans ses usages. |
 | `accentStrongColor` | Définir la variante renforcée de l’accent. | Couleur CSS normalisée | Optionnelle | Valeur du thème | Même validation que l’accent principal. |
-| `bodyFont` | Définir la famille utilisée pour le texte courant. | Référence typographique | Optionnelle | Pile de polices système | Valeur issue d’une liste autorisée ou ressource auto-hébergée valide. |
-| `headingFont` | Définir la famille utilisée pour les titres. | Référence typographique | Optionnelle | Identique à `bodyFont` | Même validation que la police du texte. |
+| `typography` | Regrouper les choix typographiques du lecteur publié. | Objet | Optionnelle | `{ heading: "system", body: "system" }` | Contient uniquement des identifiants issus du registre typographique. |
+
+En V1, `typography.heading` et `typography.body` acceptent les identifiants `system`, `helvetica`, `georgia`, `verdana`, `trebuchet`, `times` et `mono`. Une valeur absente ou inconnue est normalisée vers `system`. Les chaînes CSS ne sont jamais enregistrées dans l’Episode.
+
+Un Episode antérieur sans section `presentation` reçoit automatiquement le thème AudioCaption et la typographie système. Cette compatibilité ne nécessite aucune migration manuelle.
 
 Les valeurs de présentation sont des préférences éditoriales sérialisables. Les éléments temporaires tels qu’un panneau ouvert, un focus, une position de lecture ou un état de survol n’en font jamais partie.
 

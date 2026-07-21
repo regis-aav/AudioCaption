@@ -122,7 +122,7 @@ La personnalisation repose sur un contrat limité de variables CSS sémantiques 
   --ac-text-primary: #171917;
   --ac-text-secondary: #667069;
   --ac-font-body: system-ui, sans-serif;
-  --ac-font-headings: system-ui, sans-serif;
+  --ac-font-heading: system-ui, sans-serif;
 }
 ```
 
@@ -132,9 +132,9 @@ Lors de l’export :
 
 1. le Studio part des valeurs du thème sélectionné ;
 2. il applique les valeurs personnalisées autorisées ;
-3. il valide le format des couleurs et des familles typographiques ;
+3. il résout les identifiants typographiques via le registre interne partagé ;
 4. il contrôle les combinaisons de contraste ;
-5. il écrit les valeurs finales dans le bloc `:root` de `css/player.css`.
+5. il écrit les valeurs finales dans un bloc `:root` autonome après la feuille de styles du lecteur.
 
 Le fichier exporté ne dépend donc pas d’un moteur de thème au moment de la consultation.
 

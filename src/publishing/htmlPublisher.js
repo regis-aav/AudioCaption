@@ -1,3 +1,5 @@
+import { normalizeTypography, resolveFontStack } from "../theme/fontRegistry.module.mjs";
+
 const HTML_ENTITIES = Object.freeze({
   "&": "&amp;",
   "<": "&lt;",
@@ -13,6 +15,10 @@ function escapeHtml(value) {
 function serializeEpisodeData(publication) {
   const data = {
     metadata: publication.metadata,
+    presentation: {
+      ...publication.presentation,
+      typography: normalizeTypography(publication.presentation?.typography),
+    },
     media: {
       artwork: publication.paths.artwork,
       audio: publication.paths.audio,
@@ -26,6 +32,32 @@ function serializeEpisodeData(publication) {
     .replace(/>/g, "\\u003e")
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
+}
+
+function buildTypographyStyle(publication) {
+  const typography = normalizeTypography(publication.presentation?.typography);
+  const headingStack = resolveFontStack(typography.heading);
+  const bodyStack = resolveFontStack(typography.body);
+
+  return `    <style>
+      :root {
+        --ac-font-heading: ${headingStack};
+        --ac-font-body: ${bodyStack};
+      }
+
+      body,
+      button,
+      input {
+        font-family: var(--ac-font-body);
+      }
+
+      h1,
+      h2,
+      h3,
+      .ac-episode-series {
+        font-family: var(--ac-font-heading);
+      }
+    </style>`;
 }
 
 function optionalParagraph(className, label, value) {
@@ -49,6 +81,7 @@ function buildIndexHtml(publication) {
   const description = optionalParagraph("ac-episode-description", "", metadata.description);
   const author = optionalParagraph("ac-episode-author", "Par", metadata.author);
   const episodeData = serializeEpisodeData(publication);
+  const typographyStyle = buildTypographyStyle(publication);
 
   return `<!doctype html>
 <html lang="${language}">
@@ -57,6 +90,7 @@ function buildIndexHtml(publication) {
     <meta name="viewport" content="width=device-width, initial-scale=1">${descriptionMeta}
     <title>${title}</title>
     <link rel="stylesheet" href="${escapeHtml(paths.stylesheet)}">
+${typographyStyle}
   </head>
   <body>
     <main class="ac-page">

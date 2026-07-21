@@ -1,3 +1,5 @@
+import { normalizeTypography } from "../theme/fontRegistry.module.mjs";
+
 const SUPPORTED_TARGET = "html";
 
 const HTML_PATHS = Object.freeze({
@@ -156,8 +158,13 @@ export function validateEpisode(episode) {
     validateAsset(episode.media.captions, "captions", issues);
   }
 
-  if (!isPlainObject(episode.presentation) || !isNonEmptyString(episode.presentation.theme)) {
-    issues.push("presentation.theme est obligatoire.");
+  if (episode.presentation !== undefined && !isPlainObject(episode.presentation)) {
+    issues.push("presentation doit être un objet lorsqu'elle est renseignée.");
+  } else if (
+    episode.presentation?.theme !== undefined &&
+    !isNonEmptyString(episode.presentation.theme)
+  ) {
+    issues.push("presentation.theme doit être une chaîne non vide lorsqu'il est renseigné.");
   }
 
   if (episode.brand !== undefined) {
@@ -229,7 +236,7 @@ function compactObject(entries) {
   return Object.fromEntries(entries.filter(([, value]) => value !== undefined));
 }
 
-function createMetadata(episode) {
+function createMetadata(episode, presentation) {
   return compactObject([
     ["episodeId", episode.id],
     ["modelVersion", episode.modelVersion],
@@ -242,8 +249,17 @@ function createMetadata(episode) {
     ["publishedAt", episode.metadata.publishedAt],
     ["transcriptLanguage", episode.accessibility?.transcriptLanguage ?? episode.metadata.language],
     ["brandName", episode.brand?.name],
-    ["theme", episode.presentation.theme.trim()],
+    ["theme", presentation.theme],
   ]);
+}
+
+function createPresentation(episode) {
+  return {
+    theme: isNonEmptyString(episode.presentation?.theme)
+      ? episode.presentation.theme.trim()
+      : "audio-caption",
+    typography: normalizeTypography(episode.presentation?.typography),
+  };
 }
 
 function createWarnings(episode, assets) {
@@ -276,10 +292,12 @@ function validateTarget(target) {
 /** Assemble les données de publication sans produire de fichier. */
 export function createPublicationContext(episode, target, assets) {
   validateTarget(target);
+  const presentation = createPresentation(episode);
 
   return {
     target,
-    metadata: createMetadata(episode),
+    metadata: createMetadata(episode, presentation),
+    presentation,
     assets,
     paths: { ...HTML_PATHS },
     warnings: createWarnings(episode, assets),

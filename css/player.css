@@ -15,6 +15,8 @@
   --ac-gold-soft: var(--ac-accent-soft);
   --ac-radius-lg: 18px;
   --ac-radius-md: 14px;
+  --ac-font-heading: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ac-font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ac-text-heading-1: 2.25rem;
   --ac-text-heading-2: 1.5rem;
   --ac-text-heading-3: 1.2rem;
@@ -39,7 +41,7 @@ body {
   min-height: 100vh;
   color: var(--ac-ink);
   background: var(--ac-surface-strong);
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ac-font-body);
   font-size: var(--ac-text-body);
   line-height: var(--ac-leading-body);
 }
@@ -57,6 +59,15 @@ body {
 .ac-player {
   display: grid;
   gap: 14px;
+  font-family: var(--ac-font-body);
+}
+
+.ac-episode-label,
+.ac-episode-title,
+.ac-chapters-title,
+.ac-chapter-title,
+.ac-sobriety h3 {
+  font-family: var(--ac-font-heading);
 }
 
 .ac-episode-card {
@@ -849,6 +860,12 @@ body {
   line-height: var(--ac-leading-caption);
 }
 
+.ac-editorial-search-counter[hidden],
+.ac-editorial-search-button[hidden],
+.ac-editorial-search-status[hidden] {
+  display: none;
+}
+
 .ac-editorial-action:hover {
   border-color: var(--ac-accent-muted);
   background: var(--ac-accent-soft);
@@ -966,6 +983,22 @@ body {
   align-content: start;
 }
 
+.ac-publication-typography {
+  display: grid;
+  gap: 14px;
+  margin: 4px 0 0;
+  padding: 16px;
+  border: 1px solid var(--ac-line);
+  border-radius: var(--ac-radius-md);
+}
+
+.ac-publication-typography legend {
+  padding: 0 6px;
+  color: var(--ac-ink);
+  font-size: var(--ac-text-caption);
+  font-weight: 800;
+}
+
 .ac-publication-field {
   display: grid;
   gap: 6px;
@@ -979,7 +1012,8 @@ body {
 }
 
 .ac-publication-field input,
-.ac-publication-field textarea {
+.ac-publication-field textarea,
+.ac-publication-field select {
   width: 100%;
   min-width: 0;
   padding: 10px 12px;
@@ -996,10 +1030,36 @@ body {
   min-height: 42px;
 }
 
+.ac-publication-field select {
+  min-height: 42px;
+}
+
+.ac-publication-field select:disabled {
+  color: var(--ac-muted);
+  background: var(--ac-surface-strong);
+  cursor: not-allowed;
+}
+
 .ac-publication-field textarea {
   min-height: 126px;
   resize: vertical;
   line-height: var(--ac-leading-body);
+}
+
+.ac-publication-font-match {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--ac-ink);
+  font-size: var(--ac-text-caption);
+  font-weight: 700;
+}
+
+.ac-publication-font-match input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--ac-accent-strong);
 }
 
 .ac-publication-field input[aria-invalid="true"],
@@ -1035,6 +1095,12 @@ body {
   border: 1px solid var(--ac-line);
   border-radius: var(--ac-radius-lg);
   background: #ffffff;
+  font-family: var(--ac-font-body);
+}
+
+.ac-publication-preview-label,
+.ac-publication-preview-card h4 {
+  font-family: var(--ac-font-heading);
 }
 
 .ac-publication-preview-media {
@@ -1154,7 +1220,9 @@ body {
 .ac-secondary-button:focus-visible,
 .ac-dialog-close:focus-visible,
 .ac-publication-field input:focus-visible,
-.ac-publication-field textarea:focus-visible {
+.ac-publication-field textarea:focus-visible,
+.ac-publication-field select:focus-visible,
+.ac-publication-font-match input:focus-visible {
   outline: 3px solid var(--ac-focus-ring);
   outline-offset: 2px;
 }

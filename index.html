@@ -4,9 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AudioCaption</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/player.css">
   </head>
   <body>
@@ -166,11 +163,11 @@
                   <input id="ac-transcript-search" type="search" placeholder="Recherche…" aria-label="Rechercher dans la transcription">
                 </label>
                 <div class="ac-editorial-search-feedback">
-                  <span class="ac-editorial-search-counter" id="ac-search-counter" aria-hidden="true">0 / 0</span>
-                  <button class="ac-editorial-search-button" id="ac-search-previous" type="button" aria-label="Résultat précédent" disabled>
+                  <span class="ac-editorial-search-counter" id="ac-search-counter" role="status" aria-live="polite" hidden></span>
+                  <button class="ac-editorial-search-button" id="ac-search-previous" type="button" aria-label="Résultat précédent" disabled hidden>
                     <span aria-hidden="true">↑</span>
                   </button>
-                  <button class="ac-editorial-search-button" id="ac-search-next" type="button" aria-label="Résultat suivant" disabled>
+                  <button class="ac-editorial-search-button" id="ac-search-next" type="button" aria-label="Résultat suivant" disabled hidden>
                     <span aria-hidden="true">↓</span>
                   </button>
                   <p class="ac-editorial-search-status" id="ac-search-results" role="status" aria-live="polite">Aucune transcription chargée.</p>
@@ -254,6 +251,25 @@
               <span>Description</span>
               <textarea id="ac-publication-description" rows="5"></textarea>
             </label>
+
+            <fieldset class="ac-publication-typography">
+              <legend>Typographie</legend>
+
+              <label class="ac-publication-field" for="ac-publication-heading-font">
+                <span>Police des titres</span>
+                <select id="ac-publication-heading-font"></select>
+              </label>
+
+              <label class="ac-publication-field" for="ac-publication-body-font">
+                <span>Police du texte</span>
+                <select id="ac-publication-body-font"></select>
+              </label>
+
+              <label class="ac-publication-font-match" for="ac-publication-font-match">
+                <input id="ac-publication-font-match" type="checkbox">
+                <span>Utiliser la même police partout</span>
+              </label>
+            </fieldset>
           </div>
 
           <section class="ac-publication-preview" aria-labelledby="ac-publication-preview-title">
@@ -290,6 +306,7 @@
       <span>Créé par<br><a class="ac-badge-link" href="https://artisanaudiovideo.fr" target="_blank" rel="noopener noreferrer">Artisan Audio Vidéo</a></span>
     </aside>
 
+    <script src="src/theme/fontRegistry.js"></script>
     <script src="src/domain/chapterEngine.js"></script>
     <script src="src/importers/chapterImporter.js"></script>
     <script src="app.js"></script>
