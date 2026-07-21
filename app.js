@@ -26,6 +26,9 @@ const episodeDuration = document.querySelector("#ac-episode-duration");
 const episodeAuthorMeta = document.querySelector("#ac-episode-author-meta");
 const episodeSeries = document.querySelector('[data-episode-field="series"]');
 const episodeNumber = document.querySelector('[data-episode-field="episodeNumber"]');
+const episodeLabel = document.querySelector("#ac-episode-label");
+const episodeSeriesWrap = document.querySelector("[data-episode-season]");
+const episodeSeparator = document.querySelector("[data-episode-separator]");
 const episodeNumberWrap = document.querySelector("[data-episode-number]");
 const episodeDescriptionBlock = document.querySelector("#ac-episode-description-block");
 const episodeDescriptionContent = document.querySelector("#ac-episode-description-content");
@@ -73,7 +76,10 @@ const publicationFieldErrors = {
 const publicationPreview = {
   card: document.querySelector(".ac-publication-preview-card"),
   cover: document.querySelector("#ac-publication-preview-cover"),
+  label: document.querySelector("#ac-publication-preview-label"),
   series: document.querySelector("#ac-publication-preview-series"),
+  seriesWrap: document.querySelector("#ac-publication-preview-series-wrap"),
+  separator: document.querySelector("#ac-publication-preview-separator"),
   episodeNumber: document.querySelector("#ac-publication-preview-number"),
   episodeNumberWrap: document.querySelector("#ac-publication-preview-number-wrap"),
   title: document.querySelector("#ac-publication-preview-episode-title"),
@@ -560,14 +566,35 @@ function getEpisodeTitle(file) {
   return file.name.replace(/\.[^/.]+$/, "") || "Titre de l’épisode";
 }
 
+function formatEpisodeIndex(value) {
+  const normalized = value.trim();
+  return /^\d+$/.test(normalized) ? String(Number.parseInt(normalized, 10)) : normalized;
+}
+
+function renderEpisodeIdentity(elements, seasonValue, episodeValue) {
+  const season = formatEpisodeIndex(seasonValue);
+  const episodeIndex = formatEpisodeIndex(episodeValue);
+
+  elements.series.textContent = season;
+  elements.episodeNumber.textContent = episodeIndex;
+  elements.seriesWrap.hidden = !season;
+  elements.episodeNumberWrap.hidden = !episodeIndex;
+  elements.separator.hidden = !season || !episodeIndex;
+  elements.label.hidden = !season && !episodeIndex;
+}
+
 function renderEpisodeMetadata() {
   const metadata = normalizeEpisodeMetadata(episode.metadata, episode.createdAt);
-  const hasEpisodeNumber = Boolean(metadata.episodeNumber.trim());
   const author = metadata.author.trim();
 
-  episodeSeries.textContent = metadata.series.trim() || "Épisode";
-  episodeNumber.textContent = metadata.episodeNumber;
-  episodeNumberWrap.hidden = !hasEpisodeNumber;
+  renderEpisodeIdentity({
+    label: episodeLabel,
+    series: episodeSeries,
+    seriesWrap: episodeSeriesWrap,
+    separator: episodeSeparator,
+    episodeNumber,
+    episodeNumberWrap,
+  }, metadata.series, metadata.episodeNumber);
   episodeTitle.textContent = metadata.title;
   episodeDescription.textContent = metadata.description;
   episodeDescriptionBlock.hidden = !metadata.description.trim();
@@ -633,10 +660,7 @@ function renderPublicationPreview() {
     return;
   }
 
-  const hasEpisodeNumber = Boolean(publicationDraft.episodeNumber.trim());
-  publicationPreview.series.textContent = publicationDraft.series.trim() || "Épisode";
-  publicationPreview.episodeNumber.textContent = publicationDraft.episodeNumber;
-  publicationPreview.episodeNumberWrap.hidden = !hasEpisodeNumber;
+  renderEpisodeIdentity(publicationPreview, publicationDraft.series, publicationDraft.episodeNumber);
   publicationPreview.title.textContent = publicationDraft.title.trim() || "Titre de l’épisode";
   publicationPreview.metadata.textContent = [
     formatPublicationDate(publicationDraft.publishedAt, publicationDraft.language),

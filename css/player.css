@@ -234,11 +234,22 @@ body {
 
 .ac-episode-label {
   margin: 0 0 10px;
-  color: var(--ac-accent-strong);
-  font-size: var(--ac-text-caption);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--ac-muted);
+  font-size: var(--ac-text-secondary);
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: var(--ac-leading-caption);
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.ac-episode-label[hidden] {
+  display: none;
+}
+
+.ac-episode-label-icon {
+  color: var(--ac-muted);
+  font-size: 0.85em;
 }
 
 .ac-episode-title {
@@ -1289,11 +1300,17 @@ body {
 }
 
 .ac-publication-preview-label {
-  color: var(--ac-accent-strong);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--ac-muted);
+  font-size: var(--ac-text-caption);
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: var(--ac-leading-caption);
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.ac-publication-preview-label[hidden] {
+  display: none;
 }
 
 .ac-publication-preview-card h4 {

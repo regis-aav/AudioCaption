@@ -33,9 +33,10 @@
             </section>
           </div>
           <div class="ac-episode-details">
-            <p class="ac-episode-label">
-              <span data-episode-field="series">Épisode</span>
-              <span data-episode-number hidden> · <span data-episode-field="episodeNumber"></span></span>
+            <p class="ac-episode-label" id="ac-episode-label" hidden>
+              <span data-episode-season hidden><span class="ac-episode-label-icon" aria-hidden="true">◈</span> Saison <span data-episode-field="series"></span></span>
+              <span data-episode-separator aria-hidden="true" hidden> · </span>
+              <span data-episode-number hidden><span class="ac-episode-label-icon" aria-hidden="true">◉</span> Épisode <span data-episode-field="episodeNumber"></span></span>
             </p>
             <h2 class="ac-episode-title" id="ac-episode-title" data-episode-field="title">Titre de l’épisode</h2>
             <div class="ac-episode-description-block" id="ac-episode-description-block" hidden>
@@ -320,9 +321,10 @@
                 <span id="ac-publication-preview-placeholder">Couverture</span>
               </div>
               <div class="ac-publication-preview-details">
-                <p class="ac-publication-preview-label">
-                  <span id="ac-publication-preview-series">Épisode</span>
-                  <span id="ac-publication-preview-number-wrap" hidden> · <span id="ac-publication-preview-number"></span></span>
+                <p class="ac-publication-preview-label" id="ac-publication-preview-label" hidden>
+                  <span id="ac-publication-preview-series-wrap" hidden><span class="ac-episode-label-icon" aria-hidden="true">◈</span> Saison <span id="ac-publication-preview-series"></span></span>
+                  <span id="ac-publication-preview-separator" aria-hidden="true" hidden> · </span>
+                  <span id="ac-publication-preview-number-wrap" hidden><span class="ac-episode-label-icon" aria-hidden="true">◉</span> Épisode <span id="ac-publication-preview-number"></span></span>
                 </p>
                 <h4 id="ac-publication-preview-episode-title">Titre de l’épisode</h4>
                 <p id="ac-publication-preview-meta"></p>
