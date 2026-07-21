@@ -73,6 +73,7 @@ body {
 
 .ac-episode-label,
 .ac-episode-title,
+.ac-takeaways-title,
 .ac-chapters-title,
 .ac-chapter-title,
 .ac-sobriety h3 {
@@ -110,6 +111,14 @@ body {
   overflow: hidden;
   border-radius: var(--ac-radius-lg);
   background: var(--ac-surface-strong);
+  transition: transform var(--ac-transition-normal), box-shadow var(--ac-transition-normal);
+}
+
+.ac-player.is-playing .ac-media {
+  box-shadow:
+    0 18px 38px rgba(25, 39, 30, 0.16),
+    0 0 0 5px color-mix(in srgb, var(--ac-accent) 14%, transparent);
+  animation: ac-artwork-breathe 5.8s ease-in-out infinite;
 }
 
 .ac-cover {
@@ -169,6 +178,54 @@ body {
   line-height: var(--ac-leading-body);
 }
 
+.ac-takeaways {
+  margin-top: var(--ac-space-3);
+  padding: 10px var(--ac-space-4) 9px;
+  border: 1px solid color-mix(in srgb, var(--ac-line) 72%, transparent);
+  border-radius: var(--ac-radius-lg);
+  background: var(--ac-surface);
+}
+
+.ac-takeaways[hidden] {
+  display: none;
+}
+
+.ac-takeaways-title {
+  margin: 0;
+  font-size: var(--ac-text-body);
+  font-weight: 800;
+  line-height: var(--ac-leading-tight);
+}
+
+.ac-takeaways-list {
+  display: grid;
+  gap: var(--ac-space-2);
+  margin: var(--ac-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ac-takeaways-list li {
+  position: relative;
+  display: -webkit-box;
+  padding-left: 14px;
+  overflow: hidden;
+  color: var(--ac-muted);
+  font-size: var(--ac-text-secondary);
+  line-height: var(--ac-leading-caption);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ac-takeaways-list li::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--ac-accent-strong);
+  font-weight: 800;
+  content: "✓";
+}
+
 .ac-episode-details {
   min-width: 0;
   padding: 14px var(--ac-space-2) 6px 0;
@@ -191,15 +248,66 @@ body {
   letter-spacing: -0.02em;
 }
 
-.ac-episode-description {
-  display: -webkit-box;
+.ac-episode-description-block {
   margin: 14px 0 0;
+}
+
+.ac-episode-description-block[hidden] {
+  display: none;
+}
+
+.ac-episode-description-content {
+  position: relative;
+  max-height: 4.56rem;
   overflow: hidden;
+}
+
+.ac-episode-description {
+  margin: 0;
   color: var(--ac-muted);
   font-size: 0.95rem;
   line-height: var(--ac-leading-body);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+}
+
+.ac-episode-description-block.is-collapsible:not(.is-expanded) .ac-episode-description-content::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1.6rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff);
+  content: "";
+  pointer-events: none;
+}
+
+.ac-episode-description-block.is-expanded .ac-episode-description-content {
+  max-height: none;
+}
+
+.ac-episode-description-toggle {
+  min-height: 36px;
+  margin-top: var(--ac-space-1);
+  padding: 0;
+  border: 0;
+  color: var(--ac-accent-strong);
+  background: transparent;
+  font: inherit;
+  font-size: var(--ac-text-caption);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ac-episode-description-toggle[hidden] {
+  display: none;
+}
+
+.ac-episode-description-toggle:hover {
+  text-decoration: underline;
+}
+
+.ac-episode-description-toggle:focus-visible {
+  outline: 3px solid var(--ac-focus-ring);
+  outline-offset: 2px;
 }
 
 .ac-episode-meta {
@@ -249,7 +357,7 @@ body {
   margin: 0;
   min-height: 382px;
   padding: 20px;
-  border: 1px solid var(--ac-line);
+  border: 1px solid color-mix(in srgb, var(--ac-line) 72%, transparent);
   border-radius: var(--ac-radius-lg);
   background: #ffffff;
 }
@@ -478,7 +586,7 @@ body {
   margin: 0;
   padding: 20px;
   overflow: auto;
-  border: 1px solid var(--ac-line);
+  border: 1px solid color-mix(in srgb, var(--ac-line) 72%, transparent);
   border-radius: var(--ac-radius-lg);
   background: #ffffff;
 }
@@ -1018,6 +1126,7 @@ body {
   align-content: start;
 }
 
+.ac-publication-takeaways,
 .ac-publication-typography {
   display: grid;
   gap: 14px;
@@ -1027,6 +1136,7 @@ body {
   border-radius: var(--ac-radius-md);
 }
 
+.ac-publication-takeaways legend,
 .ac-publication-typography legend {
   padding: 0 6px;
   color: var(--ac-ink);
@@ -1458,6 +1568,17 @@ body {
   }
 }
 
+@keyframes ac-artwork-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.008);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1466,6 +1587,11 @@ body {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .ac-player.is-playing .ac-media {
+    transform: none;
+    animation: none !important;
   }
 }
 

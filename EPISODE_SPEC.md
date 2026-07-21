@@ -46,6 +46,7 @@ Episode
   metadata
     title
     description
+    takeaways
     author
     language
     publishedAt
@@ -114,11 +115,12 @@ La séparation entre `brand` et `presentation` évite de confondre l’identité
 |---|---|---|---|---|---|
 | `title` | Nom éditorial de l’épisode. | Texte | Obligatoire pour l’export | Nom du fichier audio sans extension lors du premier import | Texte non vide après suppression des espaces superflus. Longueur maximale à définir. |
 | `description` | Présenter brièvement le contenu. | Texte | Optionnelle | Aucune | Texte brut. Le rendu ne doit pas interpréter de HTML non contrôlé. |
+| `takeaways` | Mettre en avant les idées essentielles de l’épisode. | Liste de textes | Optionnelle | Liste vide | Trois éléments maximum, non vides après normalisation. Une future génération automatique alimente cette même propriété sans changer son rendu. |
 | `author` | Identifier la personne ou l’organisation responsable du contenu. | Texte | Optionnelle | Aucune | Texte brut, sans supposer qu’il s’agit d’une personne unique. |
 | `language` | Décrire la langue principale parlée dans l’épisode. | Code de langue BCP 47 | Obligatoire pour l’export | Langue choisie dans le Studio | Code valide, par exemple `fr`, `fr-FR` ou `en`. |
 | `publishedAt` | Indiquer la date de publication éditoriale. | Date civile | Optionnelle dans un ancien document, normalisée en V1 | Date de création si disponible, sinon date du jour | Format ISO `YYYY-MM-DD` lors de la sérialisation. |
 
-Un ancien Episode sans `publishedAt` reçoit automatiquement sa date de création lorsqu’elle est disponible, ou la date du jour. Aucune migration manuelle n’est nécessaire.
+Un ancien Episode sans `publishedAt` reçoit automatiquement sa date de création lorsqu’elle est disponible, ou la date du jour. Un Episode sans `takeaways` est interprété comme une liste vide. Aucune migration manuelle n’est nécessaire.
 
 ### `media`
 
@@ -296,6 +298,7 @@ La V1 comprend :
 - une version de modèle ;
 - un titre et une langue principale ;
 - une description et un auteur facultatifs ;
+- jusqu’à trois points éditoriaux facultatifs dans `metadata.takeaways` ;
 - un visuel principal ;
 - un fichier audio principal ;
 - une transcription synchronisée ;

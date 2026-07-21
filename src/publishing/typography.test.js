@@ -96,3 +96,23 @@ test("utilise la date de création d'un ancien Episode sans date de publication"
 
   assert.equal(publication.metadata.publishedAt, "2024-02-14");
 });
+
+test("exporte uniquement les points à retenir renseignés", () => {
+  const episode = createEpisode();
+  episode.metadata.takeaways = [" Premier point ", "", "Deuxième point"];
+  const publication = publishEpisode(episode, "html");
+  const html = buildHtmlPublication(publication).files["index.html"].content;
+
+  assert.deepEqual(publication.metadata.takeaways, ["Premier point", "Deuxième point"]);
+  assert.match(html, /<h2 id="ac-takeaways-title">À retenir<\/h2>/);
+  assert.match(html, /<li>Premier point<\/li>/);
+  assert.match(html, /<li>Deuxième point<\/li>/);
+});
+
+test("n'exporte aucun bloc vide pour un ancien Episode", () => {
+  const publication = publishEpisode(createEpisode(), "html");
+  const html = buildHtmlPublication(publication).files["index.html"].content;
+
+  assert.deepEqual(publication.metadata.takeaways, []);
+  assert.doesNotMatch(html, /ac-takeaways/);
+});

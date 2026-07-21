@@ -54,9 +54,22 @@ function formatEpisodeDuration(seconds) {
   return remainingSeconds ? `${minutes} min ${remainingSeconds}` : `${minutes} min`;
 }
 
+function normalizeTakeaways(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((item) => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
 global.AudioCaption = Object.assign(global.AudioCaption ?? {}, {
   formatEpisodeDuration,
   formatPublicationDate,
   normalizePublicationDate,
+  normalizeTakeaways,
 });
 })(globalThis);

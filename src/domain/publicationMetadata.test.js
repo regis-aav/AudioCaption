@@ -5,6 +5,7 @@ import {
   formatEpisodeDuration,
   formatPublicationDate,
   normalizePublicationDate,
+  normalizeTakeaways,
 } from "./publicationMetadata.module.mjs";
 
 test("normalise et formate une date de publication", () => {
@@ -24,4 +25,13 @@ test("formate la durée éditoriale sans modifier le temps du lecteur", () => {
   assert.equal(formatEpisodeDuration(222.9), "3 min 42");
   assert.equal(formatEpisodeDuration(180), "3 min");
   assert.equal(formatEpisodeDuration(Number.NaN), "");
+});
+
+test("normalise au maximum trois points à retenir", () => {
+  assert.deepEqual(normalizeTakeaways([" Premier ", "", "Deuxième", 42, "Troisième", "Quatrième"]), [
+    "Premier",
+    "Deuxième",
+    "Troisième",
+  ]);
+  assert.deepEqual(normalizeTakeaways(undefined), []);
 });

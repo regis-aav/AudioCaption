@@ -27,6 +27,10 @@
                 <p class="ac-cover-placeholder-details">Format recommandé : 16:9<br>1920 × 1080 px</p>
               </div>
             </div>
+            <section class="ac-takeaways" id="ac-takeaways" aria-labelledby="ac-takeaways-title" hidden>
+              <h3 class="ac-takeaways-title" id="ac-takeaways-title">À retenir de cet épisode</h3>
+              <ul class="ac-takeaways-list" id="ac-takeaways-list"></ul>
+            </section>
           </div>
           <div class="ac-episode-details">
             <p class="ac-episode-label">
@@ -34,7 +38,12 @@
               <span data-episode-number hidden> · <span data-episode-field="episodeNumber"></span></span>
             </p>
             <h2 class="ac-episode-title" id="ac-episode-title" data-episode-field="title">Titre de l’épisode</h2>
-            <p class="ac-episode-description" data-episode-field="description">Une courte présentation de cet épisode sera bientôt disponible.</p>
+            <div class="ac-episode-description-block" id="ac-episode-description-block" hidden>
+              <div class="ac-episode-description-content" id="ac-episode-description-content">
+                <p class="ac-episode-description" data-episode-field="description"></p>
+              </div>
+              <button class="ac-episode-description-toggle" id="ac-episode-description-toggle" type="button" aria-controls="ac-episode-description-content" aria-expanded="false" hidden>Lire la suite</button>
+            </div>
 
             <div class="ac-episode-meta">
               <span class="ac-episode-meta-item" id="ac-episode-date-meta" hidden>
@@ -261,8 +270,27 @@
 
             <label class="ac-publication-field" for="ac-publication-description">
               <span>Description</span>
-              <textarea id="ac-publication-description" rows="5"></textarea>
+              <textarea id="ac-publication-description" rows="5" placeholder="Une courte présentation de cet épisode sera bientôt disponible."></textarea>
             </label>
+
+            <fieldset class="ac-publication-takeaways">
+              <legend>À retenir</legend>
+
+              <label class="ac-publication-field" for="ac-publication-takeaway-1">
+                <span>À retenir 1</span>
+                <input id="ac-publication-takeaway-1" type="text">
+              </label>
+
+              <label class="ac-publication-field" for="ac-publication-takeaway-2">
+                <span>À retenir 2</span>
+                <input id="ac-publication-takeaway-2" type="text">
+              </label>
+
+              <label class="ac-publication-field" for="ac-publication-takeaway-3">
+                <span>À retenir 3</span>
+                <input id="ac-publication-takeaway-3" type="text">
+              </label>
+            </fieldset>
 
             <fieldset class="ac-publication-typography">
               <legend>Typographie</legend>

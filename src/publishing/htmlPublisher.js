@@ -1,5 +1,9 @@
 import { normalizeTypography, resolveFontStack } from "../theme/fontRegistry.module.mjs";
-import { formatPublicationDate, normalizePublicationDate } from "../domain/publicationMetadata.module.mjs";
+import {
+  formatPublicationDate,
+  normalizePublicationDate,
+  normalizeTakeaways,
+} from "../domain/publicationMetadata.module.mjs";
 
 const HTML_ENTITIES = Object.freeze({
   "&": "&amp;",
@@ -83,6 +87,25 @@ function buildEpisodeMetadata(metadata) {
   return `        <p class="ac-episode-meta">${parts.join(' <span aria-hidden="true">•</span> ')}</p>\n`;
 }
 
+function buildTakeaways(metadata) {
+  const takeaways = normalizeTakeaways(metadata.takeaways);
+
+  if (!takeaways.length) {
+    return "";
+  }
+
+  const items = takeaways.map((takeaway) => `          <li>${escapeHtml(takeaway)}</li>`).join("\n");
+
+  return `
+        <section class="ac-takeaways" aria-labelledby="ac-takeaways-title">
+          <h2 id="ac-takeaways-title">À retenir</h2>
+          <ul>
+${items}
+          </ul>
+        </section>
+`;
+}
+
 function buildIndexHtml(publication) {
   const { metadata, paths } = publication;
   const title = escapeHtml(metadata.title);
@@ -94,6 +117,7 @@ function buildIndexHtml(publication) {
     : "";
   const description = optionalParagraph("ac-episode-description", "", metadata.description);
   const episodeMetadata = buildEpisodeMetadata(metadata);
+  const takeaways = buildTakeaways(metadata);
   const episodeData = serializeEpisodeData(publication);
   const typographyStyle = buildTypographyStyle(publication);
 
@@ -114,7 +138,7 @@ ${typographyStyle}
           <h1>${title}</h1>
 ${description}${episodeMetadata}        </header>
 
-        <img class="ac-artwork" src="${escapeHtml(paths.artwork)}" alt="Illustration de ${title}">
+        <img class="ac-artwork" src="${escapeHtml(paths.artwork)}" alt="Illustration de ${title}">${takeaways}
 
         <audio class="ac-audio" controls preload="metadata" src="${escapeHtml(paths.audio)}">
           Votre navigateur ne permet pas la lecture de cet épisode audio.

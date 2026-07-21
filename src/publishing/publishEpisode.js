@@ -1,5 +1,8 @@
 import { normalizeTypography } from "../theme/fontRegistry.module.mjs";
-import { normalizePublicationDate } from "../domain/publicationMetadata.module.mjs";
+import {
+  normalizePublicationDate,
+  normalizeTakeaways,
+} from "../domain/publicationMetadata.module.mjs";
 
 const SUPPORTED_TARGET = "html";
 
@@ -92,6 +95,25 @@ function validateOptionalString(value, path, issues) {
   }
 }
 
+function validateOptionalTakeaways(value, path, issues) {
+  if (value === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(value)) {
+    issues.push(`${path} doit être un tableau lorsqu'il est renseigné.`);
+    return;
+  }
+
+  if (value.length > 3) {
+    issues.push(`${path} ne peut pas contenir plus de trois éléments.`);
+  }
+
+  if (value.some((item) => typeof item !== "string")) {
+    issues.push(`${path} doit contenir uniquement des chaînes.`);
+  }
+}
+
 function validateAsset(asset, role, issues) {
   const rule = MEDIA_RULES[role];
 
@@ -145,6 +167,7 @@ export function validateEpisode(episode) {
     validateOptionalString(episode.metadata.description, "metadata.description", issues);
     validateOptionalString(episode.metadata.author, "metadata.author", issues);
     validateOptionalString(episode.metadata.publishedAt, "metadata.publishedAt", issues);
+    validateOptionalTakeaways(episode.metadata.takeaways, "metadata.takeaways", issues);
 
     if (!isLanguageCode(episode.metadata.language)) {
       issues.push("metadata.language doit être un code de langue BCP 47 valide.");
@@ -253,6 +276,7 @@ function createMetadata(episode, presentation) {
     ["author", episode.metadata.author],
     ["language", episode.metadata.language],
     ["publishedAt", publishedAt],
+    ["takeaways", normalizeTakeaways(episode.metadata.takeaways)],
     ["transcriptLanguage", episode.accessibility?.transcriptLanguage ?? episode.metadata.language],
     ["brandName", episode.brand?.name],
     ["theme", presentation.theme],

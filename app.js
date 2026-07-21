@@ -27,8 +27,13 @@ const episodeAuthorMeta = document.querySelector("#ac-episode-author-meta");
 const episodeSeries = document.querySelector('[data-episode-field="series"]');
 const episodeNumber = document.querySelector('[data-episode-field="episodeNumber"]');
 const episodeNumberWrap = document.querySelector("[data-episode-number]");
+const episodeDescriptionBlock = document.querySelector("#ac-episode-description-block");
+const episodeDescriptionContent = document.querySelector("#ac-episode-description-content");
 const episodeDescription = document.querySelector('[data-episode-field="description"]');
+const episodeDescriptionToggle = document.querySelector("#ac-episode-description-toggle");
 const episodeAuthor = document.querySelector('[data-episode-field="author"]');
+const episodeTakeaways = document.querySelector("#ac-takeaways");
+const episodeTakeawaysList = document.querySelector("#ac-takeaways-list");
 const sobrietyActualSize = document.querySelector("#ac-sobriety-actual-size");
 const sobrietyVideoSize = document.querySelector("#ac-sobriety-video-size");
 const sobrietySavings = document.querySelector("#ac-sobriety-savings");
@@ -57,6 +62,9 @@ const publicationTypographyFields = {
   heading: document.querySelector("#ac-publication-heading-font"),
   body: document.querySelector("#ac-publication-body-font"),
 };
+const publicationTakeawayFields = [1, 2, 3].map((index) =>
+  document.querySelector(`#ac-publication-takeaway-${index}`)
+);
 const publicationFontMatch = document.querySelector("#ac-publication-font-match");
 const publicationFieldErrors = {
   series: document.querySelector("#ac-publication-series-error"),
@@ -88,12 +96,13 @@ let pendingAudioImportFile = null;
 let areImportCardsExpanded = true;
 let audioChapterImportVersion = 0;
 let publicationDraft = null;
+let descriptionLayoutFrame = null;
 const defaultEpisodeMetadata = Object.freeze({
   series: "",
   episodeNumber: "",
   title: "Titre de l’épisode",
   author: "",
-  description: "Une courte présentation de cet épisode sera bientôt disponible.",
+  description: "",
   language: "fr",
 });
 const {
@@ -103,6 +112,7 @@ const {
   getFontOptions,
   importAudioChapters,
   normalizePublicationDate,
+  normalizeTakeaways,
   normalizeTypography,
   resolveFontStack,
 } = globalThis.AudioCaption;
@@ -153,6 +163,7 @@ function normalizeEpisodeMetadata(metadata = {}, episodeCreatedAt) {
       ])
     ),
     publishedAt: normalizePublicationDate(source.publishedAt, source.createdAt ?? episodeCreatedAt),
+    takeaways: normalizeTakeaways(source.takeaways),
   };
 }
 
@@ -428,6 +439,7 @@ function updateProgress() {
 
 function updatePlayState() {
   const isPlaying = !audio.paused;
+  player.classList.toggle("is-playing", isPlaying);
   playIcon.textContent = isPlaying ? "❚❚" : "▶";
   playButton.setAttribute("aria-label", isPlaying ? "Mettre en pause" : "Lire");
 }
@@ -558,12 +570,52 @@ function renderEpisodeMetadata() {
   episodeNumberWrap.hidden = !hasEpisodeNumber;
   episodeTitle.textContent = metadata.title;
   episodeDescription.textContent = metadata.description;
-  episodeDescription.hidden = !metadata.description.trim();
+  episodeDescriptionBlock.hidden = !metadata.description.trim();
+  episodeDescriptionBlock.classList.remove("is-expanded", "is-collapsible");
+  episodeDescriptionToggle.hidden = true;
+  episodeDescriptionToggle.textContent = "Lire la suite";
+  episodeDescriptionToggle.setAttribute("aria-expanded", "false");
+
+  if (!episodeDescriptionBlock.hidden) {
+    scheduleDescriptionOverflowUpdate();
+  }
+
   episodeDate.dateTime = metadata.publishedAt;
   episodeDate.textContent = formatPublicationDate(metadata.publishedAt, metadata.language);
   episodeDateMeta.hidden = false;
   episodeAuthor.textContent = author;
   episodeAuthorMeta.hidden = !author;
+  renderEpisodeTakeaways(metadata.takeaways);
+}
+
+function renderEpisodeTakeaways(takeaways) {
+  const normalizedTakeaways = normalizeTakeaways(takeaways);
+  const items = normalizedTakeaways.map((takeaway) => {
+    const item = document.createElement("li");
+    item.textContent = takeaway;
+    return item;
+  });
+
+  episodeTakeawaysList.replaceChildren(...items);
+  episodeTakeaways.hidden = items.length === 0;
+}
+
+function updateDescriptionOverflow() {
+  if (episodeDescriptionBlock.hidden || episodeDescriptionBlock.classList.contains("is-expanded")) {
+    return;
+  }
+
+  const isOverflowing = episodeDescriptionContent.scrollHeight > episodeDescriptionContent.clientHeight + 1;
+  episodeDescriptionBlock.classList.toggle("is-collapsible", isOverflowing);
+  episodeDescriptionToggle.hidden = !isOverflowing;
+}
+
+function scheduleDescriptionOverflowUpdate() {
+  cancelAnimationFrame(descriptionLayoutFrame);
+  descriptionLayoutFrame = requestAnimationFrame(() => {
+    descriptionLayoutFrame = null;
+    updateDescriptionOverflow();
+  });
 }
 
 function syncPublicationPreviewCover() {
@@ -612,6 +664,10 @@ function openPublicationDialog() {
   for (const [name, field] of Object.entries(publicationFields)) {
     field.value = publicationDraft[name];
   }
+
+  publicationTakeawayFields.forEach((field, index) => {
+    field.value = publicationDraft.takeaways[index] ?? "";
+  });
 
   for (const [name, field] of Object.entries(publicationTypographyFields)) {
     field.value = publicationDraft.typography[name];
@@ -673,6 +729,7 @@ function savePublicationMetadata() {
     Object.keys(publicationFields).map((name) => [name, publicationDraft[name].trim()])
   );
   savedMetadata.publishedAt = normalizePublicationDate(savedMetadata.publishedAt, episode.createdAt);
+  savedMetadata.takeaways = normalizeTakeaways(publicationDraft.takeaways);
 
   episode = {
     ...episode,
@@ -922,6 +979,18 @@ importsEditButton.addEventListener("click", () => {
   }
 });
 
+episodeDescriptionToggle.addEventListener("click", () => {
+  const isExpanded = episodeDescriptionBlock.classList.toggle("is-expanded");
+  episodeDescriptionToggle.textContent = isExpanded ? "Réduire" : "Lire la suite";
+  episodeDescriptionToggle.setAttribute("aria-expanded", String(isExpanded));
+
+  if (!isExpanded) {
+    scheduleDescriptionOverflowUpdate();
+  }
+});
+
+window.addEventListener("resize", scheduleDescriptionOverflowUpdate);
+
 publicationEditButton.addEventListener("click", openPublicationDialog);
 publicationCloseButton.addEventListener("click", closePublicationDialog);
 publicationCancelButton.addEventListener("click", closePublicationDialog);
@@ -950,6 +1019,19 @@ for (const [name, field] of Object.entries(publicationFields)) {
     renderPublicationPreview();
   });
 }
+
+publicationTakeawayFields.forEach((field, index) => {
+  field.addEventListener("input", () => {
+    if (!publicationDraft) {
+      return;
+    }
+
+    const takeaways = [...publicationDraft.takeaways];
+    takeaways[index] = field.value;
+    publicationDraft.takeaways = takeaways;
+    publicationStatus.textContent = "";
+  });
+});
 
 for (const [name, field] of Object.entries(publicationTypographyFields)) {
   field.addEventListener("change", () => {
