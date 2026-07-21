@@ -19,7 +19,11 @@ const chaptersNavigation = document.querySelector("#ac-chapters");
 const chaptersCount = document.querySelector("#ac-chapters-count");
 const chaptersList = document.querySelector("#ac-chapters-list");
 const episodeTitle = document.querySelector("#ac-episode-title");
+const episodeDateMeta = document.querySelector("#ac-episode-date-meta");
+const episodeDate = document.querySelector("#ac-episode-date");
+const episodeDurationMeta = document.querySelector("#ac-episode-duration-meta");
 const episodeDuration = document.querySelector("#ac-episode-duration");
+const episodeAuthorMeta = document.querySelector("#ac-episode-author-meta");
 const episodeSeries = document.querySelector('[data-episode-field="series"]');
 const episodeNumber = document.querySelector('[data-episode-field="episodeNumber"]');
 const episodeNumberWrap = document.querySelector("[data-episode-number]");
@@ -46,6 +50,7 @@ const publicationFields = {
   episodeNumber: document.querySelector("#ac-publication-number"),
   title: document.querySelector("#ac-publication-episode-title"),
   author: document.querySelector("#ac-publication-author"),
+  publishedAt: document.querySelector("#ac-publication-date"),
   description: document.querySelector("#ac-publication-description"),
 };
 const publicationTypographyFields = {
@@ -64,7 +69,7 @@ const publicationPreview = {
   episodeNumber: document.querySelector("#ac-publication-preview-number"),
   episodeNumberWrap: document.querySelector("#ac-publication-preview-number-wrap"),
   title: document.querySelector("#ac-publication-preview-episode-title"),
-  author: document.querySelector("#ac-publication-preview-author"),
+  metadata: document.querySelector("#ac-publication-preview-meta"),
 };
 const importCards = Object.fromEntries(
   Array.from(document.querySelectorAll("[data-import-card]"), (card) => [card.dataset.importCard, card])
@@ -93,15 +98,18 @@ const defaultEpisodeMetadata = Object.freeze({
 });
 const {
   createChapterEngine,
+  formatEpisodeDuration,
+  formatPublicationDate,
   getFontOptions,
   importAudioChapters,
+  normalizePublicationDate,
   normalizeTypography,
   resolveFontStack,
 } = globalThis.AudioCaption;
 const embeddedEpisode = readEmbeddedEpisode();
 let episode = {
   ...embeddedEpisode,
-  metadata: normalizeEpisodeMetadata(embeddedEpisode.metadata),
+  metadata: normalizeEpisodeMetadata(embeddedEpisode.metadata, embeddedEpisode.createdAt),
   presentation: normalizeEpisodePresentation(embeddedEpisode.presentation),
   navigation: {
     ...embeddedEpisode.navigation,
@@ -133,8 +141,8 @@ function readEmbeddedEpisode() {
   }
 }
 
-function normalizeEpisodeMetadata(metadata = {}) {
-  const source = metadata && typeof metadata === "object" ? metadata : {};
+function normalizeEpisodeMetadata(metadata = {}, episodeCreatedAt) {
+  const source = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {};
 
   return {
     ...source,
@@ -144,6 +152,7 @@ function normalizeEpisodeMetadata(metadata = {}) {
         typeof source[key] === "string" ? source[key] : fallback,
       ])
     ),
+    publishedAt: normalizePublicationDate(source.publishedAt, source.createdAt ?? episodeCreatedAt),
   };
 }
 
@@ -540,8 +549,9 @@ function getEpisodeTitle(file) {
 }
 
 function renderEpisodeMetadata() {
-  const metadata = normalizeEpisodeMetadata(episode.metadata);
+  const metadata = normalizeEpisodeMetadata(episode.metadata, episode.createdAt);
   const hasEpisodeNumber = Boolean(metadata.episodeNumber.trim());
+  const author = metadata.author.trim();
 
   episodeSeries.textContent = metadata.series.trim() || "Épisode";
   episodeNumber.textContent = metadata.episodeNumber;
@@ -549,7 +559,11 @@ function renderEpisodeMetadata() {
   episodeTitle.textContent = metadata.title;
   episodeDescription.textContent = metadata.description;
   episodeDescription.hidden = !metadata.description.trim();
-  episodeAuthor.textContent = metadata.author.trim() || "À venir";
+  episodeDate.dateTime = metadata.publishedAt;
+  episodeDate.textContent = formatPublicationDate(metadata.publishedAt, metadata.language);
+  episodeDateMeta.hidden = false;
+  episodeAuthor.textContent = author;
+  episodeAuthorMeta.hidden = !author;
 }
 
 function syncPublicationPreviewCover() {
@@ -572,7 +586,11 @@ function renderPublicationPreview() {
   publicationPreview.episodeNumber.textContent = publicationDraft.episodeNumber;
   publicationPreview.episodeNumberWrap.hidden = !hasEpisodeNumber;
   publicationPreview.title.textContent = publicationDraft.title.trim() || "Titre de l’épisode";
-  publicationPreview.author.textContent = publicationDraft.author.trim() || "À venir";
+  publicationPreview.metadata.textContent = [
+    formatPublicationDate(publicationDraft.publishedAt, publicationDraft.language),
+    formatEpisodeDuration(loadedAudioDuration),
+    publicationDraft.author.trim(),
+  ].filter(Boolean).join(" • ");
   applyTypography(publicationPreview.card, publicationDraft.typography);
 }
 
@@ -654,6 +672,7 @@ function savePublicationMetadata() {
   const savedMetadata = Object.fromEntries(
     Object.keys(publicationFields).map((name) => [name, publicationDraft[name].trim()])
   );
+  savedMetadata.publishedAt = normalizePublicationDate(savedMetadata.publishedAt, episode.createdAt);
 
   episode = {
     ...episode,
@@ -803,7 +822,8 @@ function loadAudioFile(file) {
     },
   };
   renderEpisodeMetadata();
-  episodeDuration.textContent = "--:--";
+  episodeDuration.textContent = "";
+  episodeDurationMeta.hidden = true;
   loadedFileSizes.audio = file.size;
   loadedAudioDuration = Number.NaN;
   updateSobrietyIndicator();
@@ -1092,8 +1112,14 @@ audio.addEventListener("loadedmetadata", () => {
   }
 
   updateProgress();
-  episodeDuration.textContent = formatTime(audio.duration);
   loadedAudioDuration = audio.duration;
+  episodeDuration.textContent = formatEpisodeDuration(loadedAudioDuration);
+  episodeDurationMeta.hidden = !episodeDuration.textContent;
+
+  if (publicationDraft) {
+    renderPublicationPreview();
+  }
+
   updateSobrietyIndicator();
   setControlsEnabled(true);
   setPlayerStatus("Audio chargé. Vous pouvez commencer la lecture.");
@@ -1107,6 +1133,9 @@ audio.addEventListener("error", () => {
   }
 
   resetImportCard("audio");
+  loadedAudioDuration = Number.NaN;
+  episodeDuration.textContent = "";
+  episodeDurationMeta.hidden = true;
   setControlsEnabled(false);
   setPlayerStatus("Impossible de charger ce fichier audio.");
 });

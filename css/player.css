@@ -220,13 +220,17 @@ body {
   white-space: nowrap;
 }
 
-.ac-episode-meta-item + .ac-episode-meta-item::before {
+.ac-episode-meta-item[hidden] {
+  display: none;
+}
+
+.ac-episode-meta-item:not([hidden]) ~ .ac-episode-meta-item:not([hidden])::before {
   margin-right: var(--ac-space-1);
   color: var(--ac-ink);
   content: "•";
 }
 
-.ac-episode-meta-item:first-child span {
+#ac-episode-duration {
   font-variant-numeric: tabular-nums;
 }
 

@@ -1,4 +1,5 @@
 import { normalizeTypography, resolveFontStack } from "../theme/fontRegistry.module.mjs";
+import { formatPublicationDate, normalizePublicationDate } from "../domain/publicationMetadata.module.mjs";
 
 const HTML_ENTITIES = Object.freeze({
   "&": "&amp;",
@@ -69,6 +70,19 @@ function optionalParagraph(className, label, value) {
   return `        <p class="${className}">${prefix}${escapeHtml(value)}</p>\n`;
 }
 
+function buildEpisodeMetadata(metadata) {
+  const publishedAt = normalizePublicationDate(metadata.publishedAt, metadata.createdAt);
+  const parts = [
+    `<time datetime="${escapeHtml(publishedAt)}">${escapeHtml(formatPublicationDate(publishedAt, metadata.language))}</time>`,
+  ];
+
+  if (metadata.author) {
+    parts.push(`<span>${escapeHtml(metadata.author)}</span>`);
+  }
+
+  return `        <p class="ac-episode-meta">${parts.join(' <span aria-hidden="true">•</span> ')}</p>\n`;
+}
+
 function buildIndexHtml(publication) {
   const { metadata, paths } = publication;
   const title = escapeHtml(metadata.title);
@@ -79,7 +93,7 @@ function buildIndexHtml(publication) {
     ? `\n    <meta name="description" content="${escapeHtml(metadata.description)}">`
     : "";
   const description = optionalParagraph("ac-episode-description", "", metadata.description);
-  const author = optionalParagraph("ac-episode-author", "Par", metadata.author);
+  const episodeMetadata = buildEpisodeMetadata(metadata);
   const episodeData = serializeEpisodeData(publication);
   const typographyStyle = buildTypographyStyle(publication);
 
@@ -98,7 +112,7 @@ ${typographyStyle}
         <header class="ac-episode-header">
           <p class="ac-episode-series">${series}${episodeNumber}</p>
           <h1>${title}</h1>
-${description}${author}        </header>
+${description}${episodeMetadata}        </header>
 
         <img class="ac-artwork" src="${escapeHtml(paths.artwork)}" alt="Illustration de ${title}">
 

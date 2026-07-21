@@ -37,19 +37,26 @@
             <p class="ac-episode-description" data-episode-field="description">Une courte présentation de cet épisode sera bientôt disponible.</p>
 
             <div class="ac-episode-meta">
-              <span class="ac-episode-meta-item">
+              <span class="ac-episode-meta-item" id="ac-episode-date-meta" hidden>
+                <svg class="ac-episode-meta-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="6" width="16" height="14" rx="2"></rect>
+                  <path d="M8 3v5M16 3v5M4 10h16"></path>
+                </svg>
+                <time id="ac-episode-date" data-episode-field="publishedAt"></time>
+              </span>
+              <span class="ac-episode-meta-item" id="ac-episode-duration-meta" hidden>
                 <svg class="ac-episode-meta-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="12" cy="12" r="8"></circle>
                   <path d="M12 7v5l3 2"></path>
                 </svg>
-                <span id="ac-episode-duration" data-episode-field="duration">--:--</span>
+                <span id="ac-episode-duration" data-episode-field="duration"></span>
               </span>
-              <span class="ac-episode-meta-item">
+              <span class="ac-episode-meta-item" id="ac-episode-author-meta" hidden>
                 <svg class="ac-episode-meta-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="12" cy="8" r="3"></circle>
                   <path d="M6 19c0-3.3 2.7-6 6-6s6 2.7 6 6"></path>
                 </svg>
-                <span data-episode-field="author">À venir</span>
+                <span data-episode-field="author"></span>
               </span>
             </div>
 
@@ -247,6 +254,11 @@
               <input id="ac-publication-author" type="text" autocomplete="name">
             </label>
 
+            <label class="ac-publication-field ac-publication-field-short" for="ac-publication-date">
+              <span>Date de publication</span>
+              <input id="ac-publication-date" type="date">
+            </label>
+
             <label class="ac-publication-field" for="ac-publication-description">
               <span>Description</span>
               <textarea id="ac-publication-description" rows="5"></textarea>
@@ -285,7 +297,7 @@
                   <span id="ac-publication-preview-number-wrap" hidden> · <span id="ac-publication-preview-number"></span></span>
                 </p>
                 <h4 id="ac-publication-preview-episode-title">Titre de l’épisode</h4>
-                <p id="ac-publication-preview-author">À venir</p>
+                <p id="ac-publication-preview-meta"></p>
               </div>
             </article>
             <button class="ac-secondary-button" id="ac-publication-cover-change" type="button">Modifier la couverture…</button>
@@ -306,6 +318,7 @@
       <span>Créé par<br><a class="ac-badge-link" href="https://artisanaudiovideo.fr" target="_blank" rel="noopener noreferrer">Artisan Audio Vidéo</a></span>
     </aside>
 
+    <script src="src/domain/publicationMetadata.js"></script>
     <script src="src/theme/fontRegistry.js"></script>
     <script src="src/domain/chapterEngine.js"></script>
     <script src="src/importers/chapterImporter.js"></script>

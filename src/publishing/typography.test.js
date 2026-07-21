@@ -75,3 +75,24 @@ test("construit encore un ancien objet Publication sans présentation", () => {
   assert.match(html, /--ac-font-heading: system-ui,/);
   assert.match(html, /"typography":\{"heading":"system","body":"system"\}/);
 });
+
+test("normalise et exporte la date de publication sans auteur par défaut", () => {
+  const episode = createEpisode();
+  episode.metadata.publishedAt = "2026-07-21";
+  episode.metadata.author = "";
+  const publication = publishEpisode(episode, "html");
+  const html = buildHtmlPublication(publication).files["index.html"].content;
+
+  assert.equal(publication.metadata.publishedAt, "2026-07-21");
+  assert.match(html, /<time datetime="2026-07-21">21 juillet 2026<\/time>/);
+  assert.doesNotMatch(html, /À venir/);
+});
+
+test("utilise la date de création d'un ancien Episode sans date de publication", () => {
+  const episode = createEpisode();
+  episode.createdAt = "2024-02-14T09:30:00";
+
+  const publication = publishEpisode(episode, "html");
+
+  assert.equal(publication.metadata.publishedAt, "2024-02-14");
+});

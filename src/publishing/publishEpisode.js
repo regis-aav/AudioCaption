@@ -1,4 +1,5 @@
 import { normalizeTypography } from "../theme/fontRegistry.module.mjs";
+import { normalizePublicationDate } from "../domain/publicationMetadata.module.mjs";
 
 const SUPPORTED_TARGET = "html";
 
@@ -237,6 +238,11 @@ function compactObject(entries) {
 }
 
 function createMetadata(episode, presentation) {
+  const publishedAt = normalizePublicationDate(
+    episode.metadata.publishedAt,
+    episode.metadata.createdAt ?? episode.createdAt
+  );
+
   return compactObject([
     ["episodeId", episode.id],
     ["modelVersion", episode.modelVersion],
@@ -246,7 +252,7 @@ function createMetadata(episode, presentation) {
     ["description", episode.metadata.description],
     ["author", episode.metadata.author],
     ["language", episode.metadata.language],
-    ["publishedAt", episode.metadata.publishedAt],
+    ["publishedAt", publishedAt],
     ["transcriptLanguage", episode.accessibility?.transcriptLanguage ?? episode.metadata.language],
     ["brandName", episode.brand?.name],
     ["theme", presentation.theme],
