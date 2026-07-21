@@ -705,9 +705,10 @@ body {
   max-width: 100%;
   min-width: 0;
   flex: 1 1 0;
-  grid-template-columns: auto auto minmax(min(240px, 100%), 1fr);
-  gap: 10px;
+  grid-template-columns: auto auto minmax(min(210px, 100%), 360px);
+  gap: 12px;
   align-items: start;
+  justify-content: start;
 }
 
 .ac-editorial-action {
@@ -744,8 +745,8 @@ body {
   position: relative;
   display: flex;
   width: auto;
-  max-width: none;
-  min-width: min(240px, 100%);
+  max-width: 360px;
+  min-width: min(210px, 100%);
   flex: 1 1 auto;
   align-items: center;
   color: var(--ac-muted);
@@ -777,6 +778,7 @@ body {
   background: #ffffff;
   font: inherit;
   font-size: var(--ac-text-caption);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .ac-editorial-search input::placeholder {
@@ -784,18 +786,33 @@ body {
   opacity: 1;
 }
 
-.ac-editorial-search:hover,
 .ac-editorial-search:focus-within {
   color: var(--ac-accent-strong);
 }
 
 .ac-editorial-search:hover input {
+  border-color: var(--ac-muted);
+}
+
+.ac-editorial-search input:not(:placeholder-shown) {
   border-color: var(--ac-accent-muted);
 }
 
 .ac-editorial-search input:focus-visible {
+  border-color: var(--ac-accent-strong);
   outline: 3px solid var(--ac-focus-ring);
   outline-offset: 2px;
+}
+
+.ac-editorial-search input::-webkit-search-cancel-button {
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 140ms ease;
+}
+
+.ac-editorial-search input::-webkit-search-cancel-button:hover,
+.ac-editorial-search input:focus-visible::-webkit-search-cancel-button {
+  opacity: 0.75;
 }
 
 .ac-editorial-search-feedback {
@@ -804,18 +821,23 @@ body {
   min-width: 0;
   flex: 0 1 auto;
   grid-column: 3;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  white-space: nowrap;
 }
 
 .ac-editorial-search-counter {
-  min-width: 42px;
+  display: inline-flex;
+  min-width: 40px;
+  height: 36px;
+  align-items: center;
+  justify-content: flex-end;
   color: var(--ac-muted);
   font-size: var(--ac-text-caption);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  text-align: center;
+  text-align: right;
   white-space: nowrap;
 }
 
